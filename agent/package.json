@@ -16,7 +16,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test --import tsx --test-reporter=spec tests/protocol.test.ts tests/config.test.ts tests/url.test.ts tests/argv.test.ts",
+    "test": "node --test --import tsx --test-reporter=spec tests/protocol.test.ts tests/config.test.ts tests/url.test.ts tests/argv.test.ts tests/env.test.ts",
     "lint": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
