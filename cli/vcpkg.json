@@ -3,14 +3,8 @@
   "name": "pr-review",
   "version-string": "0.1.0",
   "description": "C++ CLI that drives the pr-agent Node backend.",
-  "homepage": "https://github.com/your-org/pr-agent",
+  "homepage": "https://github.com/elefinnt/pr-agent",
   "license": "MIT",
-  "dependencies": [
-    "cli11",
-    "ftxui",
-    "nlohmann-json",
-    "tomlplusplus",
-    "reproc"
-  ],
+  "dependencies": ["cli11", "ftxui", "nlohmann-json", "tomlplusplus", "reproc"],
   "builtin-baseline": "ce613c41372b23b1f51333815feb3edd87ef8a8b"
 }
