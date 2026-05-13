@@ -5,11 +5,11 @@ are on the roadmap; the source already builds on those platforms via CMake.
 
 ## Prerequisites
 
-| Dependency | Minimum  | How to check                  |
-| ---------- | -------- | ----------------------------- |
-| Windows    | 10 / 11  | `winver`                      |
-| Node.js    | 22 LTS   | `node --version`              |
-| PowerShell | 5.1+     | `$PSVersionTable.PSVersion`   |
+| Dependency | Minimum | How to check                |
+| ---------- | ------- | --------------------------- |
+| Windows    | 10 / 11 | `winver`                    |
+| Node.js    | 22 LTS  | `node --version`            |
+| PowerShell | 5.1+    | `$PSVersionTable.PSVersion` |
 
 If Node is missing, install the LTS from
 [nodejs.org](https://nodejs.org/en/download) or with
@@ -17,7 +17,7 @@ If Node is missing, install the LTS from
 
 ## Installing from a release
 
-1. Open the [releases page](https://github.com/your-org/pr-agent/releases)
+1. Open the [releases page](https://github.com/elefinnt/pr-agent/releases)
    and download the latest `pr-agent-windows-x64.zip`.
 2. Right-click the zip and choose **Extract All**.
 3. Open PowerShell in the extracted folder and run:
@@ -27,6 +27,7 @@ If Node is missing, install the LTS from
    ```
 
    The script:
+
    - Copies the binary and the agent into `%LOCALAPPDATA%\pr-agent\`.
    - Adds that folder to your user `PATH`.
    - Verifies Node 22+ is on the `PATH`.

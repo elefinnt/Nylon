@@ -20,7 +20,7 @@ Posted review: https://github.com/acme/widgets/pull/42#pullrequestreview-...
 
 1. Install **Node 22+** ([nodejs.org](https://nodejs.org)).
 2. Download the latest release zip from the
-   [releases page](https://github.com/your-org/pr-agent/releases).
+   [releases page](https://github.com/elefinnt/pr-agent/releases).
 3. Run `installer\install.ps1` from an elevated PowerShell prompt.
 4. Run `pr-review init` and fill in your GitHub PAT plus the API key(s) you
    want to use.
@@ -41,13 +41,13 @@ protocol specification.
 
 ## Repository layout
 
-| Path        | Contents                                                      |
-| ----------- | ------------------------------------------------------------- |
-| `cli/`      | The C++20 binary, built with CMake + vcpkg.                   |
-| `agent/`    | The Node + TypeScript backend, built with `pnpm` and `tsc`.   |
-| `installer/`| PowerShell installer for Windows.                             |
-| `docs/`     | User-facing and architectural documentation.                  |
-| `.github/`  | CI and release workflows.                                     |
+| Path         | Contents                                                    |
+| ------------ | ----------------------------------------------------------- |
+| `cli/`       | The C++20 binary, built with CMake + vcpkg.                 |
+| `agent/`     | The Node + TypeScript backend, built with `pnpm` and `tsc`. |
+| `installer/` | PowerShell installer for Windows.                           |
+| `docs/`      | User-facing and architectural documentation.                |
+| `.github/`   | CI and release workflows.                                   |
 
 ## Useful commands
 
@@ -69,6 +69,5 @@ job. See the plan in `docs/ARCHITECTURE.md` for the full "what is in" and
 "what is deferred" lists.
 
 ## Licence
-
 
 MIT. See [LICENSE](LICENSE).
