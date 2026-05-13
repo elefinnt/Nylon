@@ -1,8 +1,13 @@
 import { AnthropicProvider } from "./anthropic.js";
+import { CursorProvider } from "./cursor.js";
 import { OpenAiProvider } from "./openai.js";
 import type { AiProvider } from "./types.js";
 
-const builtIns: readonly AiProvider[] = [new AnthropicProvider(), new OpenAiProvider()];
+const builtIns: readonly AiProvider[] = [
+  new CursorProvider(),
+  new AnthropicProvider(),
+  new OpenAiProvider(),
+];
 
 const byId = new Map<string, AiProvider>(builtIns.map((p) => [p.id, p]));
 

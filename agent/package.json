@@ -6,6 +6,7 @@
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
+    "pr-review": "./dist/index.js",
     "pr-agent-agent": "./dist/index.js"
   },
   "engines": {
@@ -15,11 +16,12 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test --import tsx --test-reporter=spec tests/protocol.test.ts tests/config.test.ts tests/url.test.ts",
+    "test": "node --test --import tsx --test-reporter=spec tests/protocol.test.ts tests/config.test.ts tests/url.test.ts tests/argv.test.ts",
     "lint": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
+    "@cursor/sdk": "^1.0.13",
     "@octokit/rest": "^21.0.2",
     "openai": "^4.68.0",
     "pino": "^9.5.0",

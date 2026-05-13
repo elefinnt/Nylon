@@ -13,6 +13,13 @@ for you when you run `pr-review init`.
 #   - pull_request:write (to post the review back)
 token = "ghp_replace_me"
 
+# Cursor uses your existing Pro / Pro+ plan instead of a separate AI bill.
+# Mint a personal API key at https://cursor.com/dashboard/integrations
+# and monitor SDK spend at https://cursor.com/dashboard/usage.
+[providers.cursor]
+api_key = "cursor_replace-me"
+default_model = "composer-2"
+
 [providers.anthropic]
 api_key = "sk-ant-replace-me"
 # Optional. Falls back to the latest Claude model the SDK knows about.

@@ -83,6 +83,14 @@ const TEMPLATE = `[github]
 #   - pull_request:write (to post the review back to the PR)
 token = "ghp_replace_me"
 
+# Cursor uses your Pro / Pro+ plan. Mint a personal API key at:
+#   https://cursor.com/dashboard/integrations
+# Monitor SDK spend at:
+#   https://cursor.com/dashboard/usage
+[providers.cursor]
+api_key = "cursor_replace_me"
+default_model = "composer-2"
+
 [providers.anthropic]
 api_key = "sk-ant-replace_me"
 default_model = "claude-opus-4.5"
@@ -93,8 +101,8 @@ default_model = "gpt-5"
 
 [defaults]
 # Set both to skip the interactive picker.
-# provider = "anthropic"
-# model = "claude-opus-4.5"
+# provider = "cursor"
+# model = "composer-2"
 post_review = true
 `;
 

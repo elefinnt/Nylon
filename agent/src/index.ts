@@ -1,35 +1,83 @@
-import { stdin, stdout } from "node:process";
+import { argv as processArgv, stdin, stdout } from "node:process";
 
+import { runCli } from "./cli/run.js";
 import { logger } from "./util/log.js";
 import { dispatch } from "./pipeline/dispatch.js";
 import { parseRequestLine, writeEvent } from "./protocol.js";
 
 async function main(): Promise<void> {
+  const argv = processArgv.slice(2);
+
+  // Argv mode: the user invoked us as `pr-review …` from a shell.
+  // Anything with arguments goes through the human-friendly CLI.
+  if (argv.length > 0) {
+    const outcome = await runCli(argv);
+    if (outcome.kind === "exit") {
+      process.exit(outcome.code);
+    }
+  }
+
+  // IPC mode: zero argv means we're either being driven by the C++ binary
+  // over NDJSON or being piped a single JSON request from a shell. Keep the
+  // existing behaviour intact.
+  await runIpcMode();
+}
+
+async function runIpcMode(): Promise<void> {
   let buffer = "";
+  let stdinClosed = false;
+  const inFlight = new Set<Promise<void>>();
+
   stdin.setEncoding("utf8");
 
-  stdin.on("data", (chunk: string) => {
-    buffer += chunk;
+  const enqueue = (line: string): void => {
+    const promise = handleLine(line).catch((err: unknown) => {
+      logger.error({ err }, "Unhandled error while handling request line");
+      writeEvent({
+        type: "error",
+        code: "INTERNAL",
+        message: err instanceof Error ? err.message : String(err),
+      });
+    });
+    inFlight.add(promise);
+    void promise.finally(() => {
+      inFlight.delete(promise);
+      maybeExit();
+    });
+  };
+
+  const maybeExit = (): void => {
+    if (stdinClosed && inFlight.size === 0) {
+      process.exit(0);
+    }
+  };
+
+  const drainBuffer = (): void => {
     let newlineIdx = buffer.indexOf("\n");
     while (newlineIdx !== -1) {
       const line = buffer.slice(0, newlineIdx).replace(/\r$/, "");
       buffer = buffer.slice(newlineIdx + 1);
       newlineIdx = buffer.indexOf("\n");
       if (line.trim() === "") continue;
-
-      handleLine(line).catch((err: unknown) => {
-        logger.error({ err }, "Unhandled error while handling request line");
-        writeEvent({
-          type: "error",
-          code: "INTERNAL",
-          message: err instanceof Error ? err.message : String(err),
-        });
-      });
+      enqueue(line);
     }
+  };
+
+  stdin.on("data", (chunk: string) => {
+    buffer += chunk;
+    drainBuffer();
   });
 
   stdin.on("end", () => {
-    process.exit(0);
+    stdinClosed = true;
+    // Flush any trailing line that wasn't newline-terminated (common when
+    // piping a single command in PowerShell or bash).
+    const trailing = buffer.replace(/\r$/, "").trim();
+    if (trailing.length > 0) {
+      buffer = "";
+      enqueue(trailing);
+    }
+    maybeExit();
   });
 
   stdout.on("error", () => {

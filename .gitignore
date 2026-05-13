@@ -27,6 +27,7 @@ desktop.ini
 .env.*
 *.local
 config.toml
+.pr-agent/
 
 # Installer artefacts
 *.zip

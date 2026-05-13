@@ -108,6 +108,33 @@ export function parseRequestLine(line: string): ParseResult {
   return { success: true, data: result.data };
 }
 
-export function writeEvent(event: AgentEvent): void {
+export type EventSink = (event: AgentEvent) => void;
+
+const ndjsonSink: EventSink = (event) => {
   stdout.write(JSON.stringify(event) + "\n");
+};
+
+let activeSink: EventSink = ndjsonSink;
+
+export function writeEvent(event: AgentEvent): void {
+  activeSink(event);
+}
+
+/**
+ * Swap the sink that `writeEvent` writes to. Returns a restore function.
+ *
+ * The default sink writes NDJSON to stdout (the IPC protocol used by the
+ * C++ CLI). The interactive `pr-review` CLI in `cli/` swaps it for a
+ * pretty TTY renderer.
+ */
+export function setEventSink(sink: EventSink): () => void {
+  const previous = activeSink;
+  activeSink = sink;
+  return () => {
+    activeSink = previous;
+  };
+}
+
+export function resetEventSink(): void {
+  activeSink = ndjsonSink;
 }
