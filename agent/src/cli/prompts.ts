@@ -2,11 +2,23 @@ import { stdin, stdout } from "node:process";
 import { createInterface } from "node:readline";
 import type { ReadLine } from "node:readline";
 
+import {
+  interactiveSelect,
+  isInteractiveSelectSupported,
+  SelectCancelled,
+} from "./interactive-select.js";
 import { paint } from "./render.js";
 
 /**
  * Small wrapper around `readline` that gives us text / secret / choice
  * prompts. Intended for use only in interactive (TTY) mode.
+ *
+ * NOTE on "secret": we deliberately DO NOT mask. Masked input via raw mode
+ * breaks paste in many terminals (especially anything that wraps pastes in
+ * bracketed-paste escape sequences). API keys end up in plaintext at
+ * `~/.pr-agent/config.toml` anyway, so the masking-during-prompt step is
+ * mostly theatre. We use plain readline input which paste works in
+ * universally and lets the user verify what they pasted.
  */
 export class Prompter {
   private readonly rl: ReadLine;
@@ -31,10 +43,14 @@ export class Prompter {
     }
   }
 
+  /**
+   * Paste-friendly prompt for secrets. Visible (not masked) by design - see
+   * the class-level note. Use {@link text} when you want a default value.
+   */
   async secret(label: string, opts: { required?: boolean } = {}): Promise<string> {
     const required = opts.required ?? true;
     while (true) {
-      const answer = (await this.askMasked(`${label}: `)).trim();
+      const answer = (await this.ask(`${label}: `)).trim();
       if (answer.length > 0) return answer;
       if (!required) return "";
       stdout.write(paint.warn("  Please enter a value.\n"));
@@ -56,6 +72,34 @@ export class Prompter {
     if (choices.length === 0) {
       throw new Error("Prompter.choice: at least one choice is required");
     }
+
+    if (isInteractiveSelectSupported()) {
+      this.rl.pause();
+      try {
+        const selectOpts: Parameters<typeof interactiveSelect<T>>[0] = {
+          label,
+          items: choices,
+        };
+        if (opts.defaultId !== undefined) selectOpts.defaultId = opts.defaultId;
+        return await interactiveSelect<T>(selectOpts);
+      } catch (err: unknown) {
+        if (err instanceof SelectCancelled) {
+          process.exit(130);
+        }
+        throw err;
+      } finally {
+        this.rl.resume();
+      }
+    }
+
+    return this.numericChoice(label, choices, opts);
+  }
+
+  private async numericChoice<T extends string>(
+    label: string,
+    choices: ReadonlyArray<{ id: T; label: string; hint?: string }>,
+    opts: { defaultId?: T },
+  ): Promise<T> {
     stdout.write(`${label}\n`);
     choices.forEach((c, i) => {
       const num = paint.dim(`  ${i + 1})`);
@@ -80,58 +124,6 @@ export class Prompter {
   private ask(prompt: string): Promise<string> {
     return new Promise((resolve) => {
       this.rl.question(prompt, (answer) => resolve(answer));
-    });
-  }
-
-  /**
-   * Prompts without echoing the typed characters back to the terminal.
-   * Falls back to plain `ask()` if stdin isn't a TTY (e.g. piped input).
-   */
-  private askMasked(prompt: string): Promise<string> {
-    if (!stdin.isTTY) {
-      return this.ask(prompt);
-    }
-    return new Promise((resolve) => {
-      stdout.write(prompt);
-      const chars: string[] = [];
-      const wasRaw = stdin.isRaw;
-      stdin.setRawMode(true);
-      stdin.resume();
-
-      const onData = (data: Buffer): void => {
-        const str = data.toString("utf8");
-        for (const ch of str) {
-          if (ch === "\u0003") {
-            cleanup();
-            stdout.write("\n");
-            process.exit(130);
-            return;
-          }
-          if (ch === "\r" || ch === "\n") {
-            cleanup();
-            stdout.write("\n");
-            resolve(chars.join(""));
-            return;
-          }
-          if (ch === "\u007f" || ch === "\b") {
-            if (chars.length > 0) {
-              chars.pop();
-              stdout.write("\b \b");
-            }
-            continue;
-          }
-          chars.push(ch);
-          stdout.write("*");
-        }
-      };
-
-      const cleanup = (): void => {
-        stdin.removeListener("data", onData);
-        stdin.setRawMode(wasRaw);
-        stdin.pause();
-      };
-
-      stdin.on("data", onData);
     });
   }
 }
