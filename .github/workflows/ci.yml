@@ -53,8 +53,6 @@ jobs:
   cli:
     name: CLI (windows-latest)
     runs-on: windows-latest
-    env:
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\.vcpkg-cache
     steps:
       - uses: actions/checkout@v4
 
@@ -64,23 +62,11 @@ jobs:
       - name: Setup Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
 
-      - name: Bootstrap vcpkg
-        shell: pwsh
-        env:
-          VCPKG_COMMIT: ce613c41372b23b1f51333815feb3edd87ef8a8b
-        run: |
-          git clone https://github.com/microsoft/vcpkg.git $env:GITHUB_WORKSPACE\vcpkg
-          git -C $env:GITHUB_WORKSPACE\vcpkg checkout $env:VCPKG_COMMIT
-          & $env:GITHUB_WORKSPACE\vcpkg\bootstrap-vcpkg.bat -disableMetrics
-          echo "VCPKG_ROOT=$env:GITHUB_WORKSPACE\vcpkg" >> $env:GITHUB_ENV
-
-      - name: Cache vcpkg packages
-        uses: actions/cache@v4
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
         with:
-          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key: vcpkg-${{ runner.os }}-${{ hashFiles('cli/vcpkg.json') }}
-          restore-keys: |
-            vcpkg-${{ runner.os }}-
+          vcpkgGitCommitId: ce613c41372b23b1f51333815feb3edd87ef8a8b
+          vcpkgJsonGlob: cli/vcpkg.json
 
       - name: Configure
         shell: pwsh
