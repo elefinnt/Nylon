@@ -36,7 +36,7 @@ async function dispatch(command: CliCommand): Promise<number> {
     case "version":
       return runVersionCommand();
     case "init":
-      return runInitCommand({ force: command.force });
+      return runInitCommand({ force: command.force, fromEnv: command.fromEnv });
     case "providers":
       return runProvidersCommand();
     case "review": {
