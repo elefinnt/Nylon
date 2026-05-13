@@ -33,7 +33,21 @@ test("init --force is parsed", () => {
   const out = parseArgv(["init", "--force"]);
   assert.equal(out.kind, "command");
   if (out.kind !== "command") return;
-  assert.deepEqual(out.command, { kind: "init", force: true });
+  assert.deepEqual(out.command, { kind: "init", force: true, fromEnv: false });
+});
+
+test("init --from-env is parsed", () => {
+  const out = parseArgv(["init", "--from-env"]);
+  assert.equal(out.kind, "command");
+  if (out.kind !== "command") return;
+  assert.deepEqual(out.command, { kind: "init", force: false, fromEnv: true });
+});
+
+test("init combines --force and --from-env", () => {
+  const out = parseArgv(["init", "--force", "--from-env"]);
+  assert.equal(out.kind, "command");
+  if (out.kind !== "command") return;
+  assert.deepEqual(out.command, { kind: "init", force: true, fromEnv: true });
 });
 
 test("init rejects unknown options", () => {
