@@ -1,0 +1,34 @@
+# Node
+node_modules/
+agent/dist/
+*.log
+.npm/
+.pnpm-store/
+
+# Build artefacts
+cli/build/
+cli/out/
+cli/CMakeUserPresets.json
+cli/vcpkg_installed/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local config / secrets (config lives in ~/.pr-agent/, never in repo)
+.env
+.env.*
+*.local
+config.toml
+
+# Installer artefacts
+*.zip
+release/
+dist/

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
+  "name": "pr-review",
+  "version-string": "0.1.0",
+  "description": "C++ CLI that drives the pr-agent Node backend.",
+  "homepage": "https://github.com/your-org/pr-agent",
+  "license": "MIT",
+  "dependencies": [
+    "cli11",
+    "ftxui",
+    "nlohmann-json",
+    "tomlplusplus",
+    "reproc"
+  ],
+  "builtin-baseline": "2024-10-01"
+}
