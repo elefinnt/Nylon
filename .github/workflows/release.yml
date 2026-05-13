@@ -19,8 +19,6 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 9
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -52,8 +50,11 @@ jobs:
 
       - name: Bootstrap vcpkg
         shell: pwsh
+        env:
+          VCPKG_COMMIT: ce613c41372b23b1f51333815feb3edd87ef8a8b
         run: |
-          git clone --depth=1 https://github.com/microsoft/vcpkg.git $env:GITHUB_WORKSPACE\vcpkg
+          git clone https://github.com/microsoft/vcpkg.git $env:GITHUB_WORKSPACE\vcpkg
+          git -C $env:GITHUB_WORKSPACE\vcpkg checkout $env:VCPKG_COMMIT
           & $env:GITHUB_WORKSPACE\vcpkg\bootstrap-vcpkg.bat -disableMetrics
           echo "VCPKG_ROOT=$env:GITHUB_WORKSPACE\vcpkg" >> $env:GITHUB_ENV
 
