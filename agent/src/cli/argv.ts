@@ -17,7 +17,7 @@
 export type CliCommand =
   | { kind: "help"; topic?: string }
   | { kind: "version" }
-  | { kind: "init"; force: boolean }
+  | { kind: "init"; force: boolean; fromEnv: boolean }
   | { kind: "providers" }
   | {
       kind: "review";
@@ -72,9 +72,14 @@ export function parseArgv(argv: readonly string[]): ParseOutcome {
 
 function parseInit(rest: readonly string[]): ParseOutcome {
   let force = false;
+  let fromEnv = false;
   for (const arg of rest) {
     if (arg === "--force" || arg === "-f") {
       force = true;
+      continue;
+    }
+    if (arg === "--from-env" || arg === "--non-interactive") {
+      fromEnv = true;
       continue;
     }
     if (HELP_FLAGS.has(arg)) {
@@ -86,7 +91,7 @@ function parseInit(rest: readonly string[]): ParseOutcome {
       exitCode: 64,
     };
   }
-  return { kind: "command", command: { kind: "init", force } };
+  return { kind: "command", command: { kind: "init", force, fromEnv } };
 }
 
 function parseProviders(rest: readonly string[]): ParseOutcome {
