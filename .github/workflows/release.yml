@@ -66,6 +66,10 @@ jobs:
           restore-keys: |
             vcpkg-${{ runner.os }}-
 
+      - name: Ensure vcpkg binary cache directory exists
+        shell: pwsh
+        run: New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
+
       - name: Configure CLI
         shell: pwsh
         working-directory: cli
