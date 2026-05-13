@@ -9,8 +9,14 @@ const TOPICS: Record<string, string> = {
     `  Walks you through entering your GitHub Personal Access Token,\n` +
     `  picking a provider (Cursor / OpenAI / Anthropic), and pasting the\n` +
     `  matching API key. Writes ~/.pr-agent/config.toml.\n\n` +
+    `  If GITHUB_TOKEN, OPENAI_API_KEY, ANTHROPIC_API_KEY or CURSOR_API_KEY\n` +
+    `  are already in the environment (or in a .env file in the current\n` +
+    `  directory) the matching prompt is skipped automatically.\n\n` +
     `  Options:\n` +
-    `    -f, --force      Skip the "config already exists" warning.\n`,
+    `    -f, --force         Skip the "config already exists" warning.\n` +
+    `        --from-env      Don't prompt at all - take everything from env.\n` +
+    `                        Requires GITHUB_TOKEN and one *_API_KEY.\n` +
+    `                        Use PR_AGENT_PROVIDER if multiple keys are set.\n`,
 
   providers:
     `${paint.bold("pr-review providers")}\n\n` +
