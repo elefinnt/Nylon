@@ -86,6 +86,7 @@ export async function runReviewCommand(input: ReviewCommandInput): Promise<numbe
     renderer.handle({ type: "error", code: e.code, message: e.message });
     exitCode = 1;
   } finally {
+    renderer.finish();
     restoreSink();
   }
   return exitCode;
