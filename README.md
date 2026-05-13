@@ -52,12 +52,13 @@ protocol specification.
 ## Useful commands
 
 ```powershell
-pr-review init                       # scaffold ~/.pr-agent/config.toml
+pr-review init                       # interactive: GitHub token + provider + key
 pr-review providers                  # list providers and models known to the agent
-pr-review <pr-url>                   # default flow: pick + review + post
+pr-review <pr-url>                   # default flow: review + post
+pr-review <pr-url> --dry             # run the review without posting
 pr-review <pr-url> -p anthropic -m claude-opus-4.5
-pr-review <pr-url> --dry-run         # run the review without posting
 pr-review --verbose <pr-url>         # surface agent debug logs on stderr
+pr-review --help                     # full usage
 ```
 
 ## Status
