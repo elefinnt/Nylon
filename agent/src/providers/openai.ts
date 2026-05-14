@@ -26,7 +26,7 @@ export class OpenAiProvider implements AiProvider {
     if (!ctx.apiKey) {
       throw new AgentError(
         "PROVIDER_MISSING_KEY",
-        "providers.openai.api_key is not set. Run `pr-review init` and add an OpenAI API key.",
+        "providers.openai.api_key is not set. Run `nylon init` and add an OpenAI API key.",
       );
     }
     const client = new OpenAI({ apiKey: ctx.apiKey, baseURL: ctx.baseUrl });
