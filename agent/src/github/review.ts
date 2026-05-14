@@ -16,6 +16,8 @@ export interface PostReviewInput {
   output: ReviewOutput;
   providerId: string;
   modelId: string;
+  requestChangesOnIssue?: boolean;
+  applyLabels?: boolean;
 }
 
 export async function postReview(
@@ -35,30 +37,39 @@ export async function postReview(
     anchorable.push(c);
   }
 
+  const event = deriveReviewEvent(input.output, input.requestChangesOnIssue ?? false);
   const body = renderSummary(input.output, input.providerId, input.modelId, orphan);
 
-  const created = await tryCreateReview(octokit, input.parsed, body, anchorable);
+  const created = await tryCreateReview(octokit, input.parsed, body, anchorable, event);
+
+  let result: PostReviewResult;
   if (created.ok) {
-    return {
+    result = {
       reviewUrl: created.url,
       postedComments: anchorable.length - created.droppedAnchors,
       droppedComments: orphan.length + created.droppedAnchors,
     };
+  } else {
+    // GitHub rejected one or more inline anchors. Fall back to summary-only.
+    const summaryOnly = await octokit.pulls.createReview({
+      owner: input.parsed.owner,
+      repo: input.parsed.repo,
+      pull_number: input.parsed.number,
+      body: body + renderInlineFallback([...orphan, ...anchorable]),
+      event,
+    });
+    result = {
+      reviewUrl: summaryOnly.data.html_url,
+      postedComments: 0,
+      droppedComments: input.output.comments.length,
+    };
   }
 
-  // GitHub rejected one or more inline anchors. Fall back to summary-only.
-  const summaryOnly = await octokit.pulls.createReview({
-    owner: input.parsed.owner,
-    repo: input.parsed.repo,
-    pull_number: input.parsed.number,
-    body: body + renderInlineFallback([...orphan, ...anchorable]),
-    event: "COMMENT",
-  });
-  return {
-    reviewUrl: summaryOnly.data.html_url,
-    postedComments: 0,
-    droppedComments: input.output.comments.length,
-  };
+  if (input.applyLabels) {
+    await applyReviewLabels(octokit, input.parsed, deriveLabels(input.output));
+  }
+
+  return result;
 }
 
 interface CreateOk {
@@ -75,6 +86,7 @@ async function tryCreateReview(
   parsed: ParsedPrUrl,
   body: string,
   comments: ReviewComment[],
+  event: "COMMENT" | "REQUEST_CHANGES",
 ): Promise<CreateOk | CreateFailed> {
   if (comments.length === 0) {
     const response = await octokit.pulls.createReview({
@@ -82,7 +94,7 @@ async function tryCreateReview(
       repo: parsed.repo,
       pull_number: parsed.number,
       body,
-      event: "COMMENT",
+      event,
     });
     return { ok: true, url: response.data.html_url, droppedAnchors: 0 };
   }
@@ -100,7 +112,7 @@ async function tryCreateReview(
       repo: parsed.repo,
       pull_number: parsed.number,
       body,
-      event: "COMMENT",
+      event,
       comments: payload,
     });
     return { ok: true, url: response.data.html_url, droppedAnchors: 0 };
@@ -123,7 +135,6 @@ function renderSummary(
   orphans: ReviewComment[],
 ): string {
   const parts: string[] = [];
-  parts.push(`### Automated review (${providerId} \u00b7 ${modelId})`);
   parts.push("");
   parts.push(`**Risk level:** ${output.riskLevel}`);
   parts.push("");
@@ -141,7 +152,7 @@ function renderSummary(
     parts.push("</details>");
   }
   parts.push("");
-  parts.push("_Reviewed by pr-agent. This is an AI suggestion, not a human approval._");
+  parts.push("_Reviewed by [Nylon](https://github.com/elefinnt/Nylon)._");
   return parts.join("\n");
 }
 
@@ -156,6 +167,43 @@ function renderInlineFallback(comments: ReviewComment[]): string {
 
 function renderComment(c: ReviewComment): string {
   return `**${labelForSeverity(c.severity)}**\n\n${c.body}`;
+}
+
+function deriveReviewEvent(
+  output: ReviewOutput,
+  requestChangesOnIssue: boolean,
+): "COMMENT" | "REQUEST_CHANGES" {
+  if (!requestChangesOnIssue) return "COMMENT";
+  if (output.riskLevel === "high" || output.comments.some(c => c.severity === "issue")) {
+    return "REQUEST_CHANGES";
+  }
+  return "COMMENT";
+}
+
+function deriveLabels(output: ReviewOutput): string[] {
+  const labels: string[] = [];
+  if (output.riskLevel === "high") labels.push("high-risk");
+  if (output.comments.some(c => c.severity === "issue")) labels.push("needs-fixes");
+  if (output.followUps.length > 0) labels.push("follow-up-needed");
+  return labels;
+}
+
+async function applyReviewLabels(
+  octokit: Octokit,
+  parsed: ParsedPrUrl,
+  labels: string[],
+): Promise<void> {
+  if (labels.length === 0) return;
+  try {
+    await octokit.issues.addLabels({
+      owner: parsed.owner,
+      repo: parsed.repo,
+      issue_number: parsed.number,
+      labels,
+    });
+  } catch {
+    // Labels may not exist on the repository; fail silently.
+  }
 }
 
 function labelForSeverity(severity: ReviewComment["severity"]): string {
