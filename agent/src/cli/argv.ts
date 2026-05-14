@@ -1,15 +1,15 @@
 /**
- * Tiny zero-dependency argv parser for the `pr-review` CLI.
+ * Tiny zero-dependency argv parser for the `nylon` CLI.
  *
  * Surface:
- *   pr-review init [--force]
- *   pr-review providers
- *   pr-review menu
- *   pr-review review <pr-url> [--dry|-n] [--provider|-p <id>] [--model|-m <id>]
- *                              [--verbose|-v]
- *   pr-review <pr-url>             (alias for `review <pr-url>`)
- *   pr-review --help|-h
- *   pr-review --version|-V
+ *   nylon init [--force]
+ *   nylon providers
+ *   nylon menu
+ *   nylon review <pr-url> [--dry|-n] [--provider|-p <id>] [--model|-m <id>]
+ *                          [--verbose|-v]
+ *   nylon <pr-url>             (alias for `review <pr-url>`)
+ *   nylon --help|-h
+ *   nylon --version|-V
  *
  * Anything that doesn't look like an argv command (i.e. argv length 0) falls
  * through to the legacy NDJSON-on-stdin IPC mode that the C++ binary uses.
@@ -68,7 +68,7 @@ export function parseArgv(argv: readonly string[]): ParseOutcome {
       }
       return {
         kind: "error",
-        message: `Unknown command: ${first}. Run \`pr-review --help\`.`,
+        message: `Unknown command: ${first}. Run \`nylon --help\`.`,
         exitCode: 64,
       };
   }
@@ -185,7 +185,7 @@ function parseReview(rest: readonly string[]): ParseOutcome {
   if (!url) {
     return {
       kind: "error",
-      message: "Missing pull request URL. Usage: pr-review review <pr-url>",
+      message: "Missing pull request URL. Usage: nylon review <pr-url>",
       exitCode: 64,
     };
   }
