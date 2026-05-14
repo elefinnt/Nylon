@@ -10,7 +10,7 @@ export interface GithubClientOptions {
 export function createOctokit(opts: GithubClientOptions): Octokit {
   return new Octokit({
     auth: opts.token,
-    userAgent: `pr-agent/${version}`,
+    userAgent: `nylon/${version}`,
     baseUrl: opts.baseUrl,
   });
 }
