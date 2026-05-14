@@ -19,8 +19,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  // No argv: interactive users expect bare `nylon` to open the same UI as
-  // `nylon menu`. When stdin is not a TTY we stay on NDJSON stdin IPC so the
+  // No argv: interactive users expect bare `nylon` to open the main menu. When
+  // stdin is not a TTY we stay on NDJSON stdin IPC so the
   // native shim and pipe-driven callers keep working unchanged.
   if (stdin.isTTY) {
     const code = await runMenuCommand();
