@@ -4,6 +4,7 @@ import { parseArgv } from "./argv.js";
 import type { CliCommand } from "./argv.js";
 import { runHelpCommand, runVersionCommand } from "./commands/help.js";
 import { runInitCommand } from "./commands/init.js";
+import { runCatCommand } from "./commands/cat.js";
 import { runMenuCommand } from "./commands/menu.js";
 import { runProvidersCommand } from "./commands/providers.js";
 import { runReviewCommand } from "./commands/review.js";
@@ -42,6 +43,8 @@ async function dispatch(command: CliCommand): Promise<number> {
       return runProvidersCommand();
     case "menu":
       return runMenuCommand();
+    case "cat":
+      return runCatCommand();
     case "review": {
       const input = {
         url: command.url,
