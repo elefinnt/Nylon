@@ -1,12 +1,66 @@
 import { z } from "zod";
 import type { Skill } from "../skills/types.js";
 
+// Models drift from our four-value enum constantly (especially `nit`, which is
+// a GitHub-review idiom they were trained on). Normalise common aliases instead
+// of rejecting the whole review.
+const SEVERITY_ALIASES: Record<string, "info" | "suggestion" | "warning" | "issue"> = {
+  info: "info",
+  note: "info",
+  comment: "info",
+  observation: "info",
+  praise: "info",
+  question: "info",
+  clarification: "info",
+  suggestion: "suggestion",
+  nit: "suggestion",
+  nitpick: "suggestion",
+  minor: "suggestion",
+  style: "suggestion",
+  refactor: "suggestion",
+  warning: "warning",
+  warn: "warning",
+  important: "warning",
+  caution: "warning",
+  issue: "issue",
+  bug: "issue",
+  error: "issue",
+  blocker: "issue",
+  critical: "issue",
+};
+
+const severityField = z.preprocess(
+  (v) => {
+    if (typeof v !== "string") return v;
+    return SEVERITY_ALIASES[v.trim().toLowerCase()] ?? "suggestion";
+  },
+  z.enum(["info", "suggestion", "warning", "issue"]).default("suggestion"),
+);
+
+// `line` is supposed to be a positive integer on the RIGHT side of the diff,
+// but models sometimes return `null`, a stringified number, `0`, or a float.
+// Coerce anything we can; otherwise leave it null so the downstream renderer
+// can fall back to a file-level / summary comment instead of crashing.
+const lineField = z.preprocess(
+  (v) => {
+    if (typeof v === "string") {
+      const n = parseInt(v.trim(), 10);
+      return Number.isFinite(n) && n > 0 ? n : null;
+    }
+    if (typeof v === "number") {
+      return Number.isInteger(v) && v > 0 ? v : null;
+    }
+    return null;
+  },
+  z.number().int().positive().nullable(),
+);
+
 export const reviewCommentSchema = z.object({
   path: z.string().min(1),
-  line: z.number().int().positive(),
+  line: lineField,
   side: z.enum(["LEFT", "RIGHT"]).default("RIGHT"),
   body: z.string().min(1),
-  severity: z.enum(["info", "suggestion", "warning", "issue"]).default("suggestion"),
+  severity: severityField,
 });
 
 export const reviewOutputSchema = z.object({
