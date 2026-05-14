@@ -5,10 +5,8 @@ import { Prompter } from "../prompts.js";
 import { paint } from "../render.js";
 
 /**
- * `nylon menu` - interactive entry point. Opens the main menu and loops
- * until the user picks Exit (or hits Ctrl+C). Requires a TTY because every
- * action is a prompt; in non-interactive contexts we tell the user to call
- * the per-command surface instead.
+ * Interactive main menu. Loops until Exit (or Ctrl+C). Requires a TTY; in
+ * non-interactive contexts callers should use explicit subcommands instead.
  */
 export async function runMenuCommand(): Promise<number> {
   if (!stdin.isTTY) {
