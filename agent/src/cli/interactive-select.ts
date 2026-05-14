@@ -1,5 +1,6 @@
 import { stdin, stdout } from "node:process";
 
+import type { LiveRegion } from "./live-region.js";
 import { paint } from "./render.js";
 import { ansi, isAnimationEnabled, onCleanup } from "./tty.js";
 
@@ -13,6 +14,17 @@ export interface SelectOptions<T extends string> {
   label: string;
   items: ReadonlyArray<SelectItem<T>>;
   defaultId?: T;
+  /**
+   * Render through a {@link LiveRegion} so the picker swaps in place
+   * with whatever menu screen is currently visible. When omitted, the
+   * picker is appended to scrollback (legacy behaviour).
+   */
+  region?: LiveRegion;
+  /**
+   * Optional pre-formatted lines to render above the label inside the
+   * same screen. Only meaningful in region mode; ignored otherwise.
+   */
+  header?: string;
 }
 
 /**
@@ -42,11 +54,10 @@ export function interactiveSelect<T extends string>(opts: SelectOptions<T>): Pro
 
     const wasRaw = stdin.isRaw === true;
     const wasPaused = stdin.isPaused();
+    const region = opts.region;
 
     stdout.write(ansi.hideCursor);
-    stdout.write(`${opts.label}\n`);
-    stdout.write(paint.dim("  (arrows to move, enter to select, Ctrl+C to cancel)\n"));
-    renderList(opts.items, cursor);
+    drawInitial(opts, cursor);
 
     let cleanedUp = false;
     const dispose = onCleanup(() => cleanup());
@@ -70,7 +81,7 @@ export function interactiveSelect<T extends string>(opts: SelectOptions<T>): Pro
 
       // Ctrl+C
       if (str === "\u0003") {
-        finishWithList(opts.items, cursor, "abort");
+        finish(opts, cursor, "abort");
         cleanup();
         reject(new SelectCancelled());
         return;
@@ -80,7 +91,7 @@ export function interactiveSelect<T extends string>(opts: SelectOptions<T>): Pro
       if (str === "\r" || str === "\n") {
         const picked = opts.items[cursor];
         if (!picked) return;
-        finishWithList(opts.items, cursor, "commit", picked);
+        finish(opts, cursor, "commit", picked);
         cleanup();
         resolve(picked.id);
         return;
@@ -89,24 +100,24 @@ export function interactiveSelect<T extends string>(opts: SelectOptions<T>): Pro
       // Arrow keys (CSI A/B) and j/k for vim folks
       if (str === "\u001b[A" || str === "k") {
         cursor = (cursor - 1 + opts.items.length) % opts.items.length;
-        redraw(opts.items, cursor);
+        redraw(opts, cursor);
         return;
       }
       if (str === "\u001b[B" || str === "j") {
         cursor = (cursor + 1) % opts.items.length;
-        redraw(opts.items, cursor);
+        redraw(opts, cursor);
         return;
       }
 
       // Home/End
       if (str === "\u001b[H" || str === "g") {
         cursor = 0;
-        redraw(opts.items, cursor);
+        redraw(opts, cursor);
         return;
       }
       if (str === "\u001b[F" || str === "G") {
         cursor = opts.items.length - 1;
-        redraw(opts.items, cursor);
+        redraw(opts, cursor);
         return;
       }
 
@@ -117,12 +128,14 @@ export function interactiveSelect<T extends string>(opts: SelectOptions<T>): Pro
           cursor = idx;
           const picked = opts.items[idx];
           if (!picked) return;
-          finishWithList(opts.items, cursor, "commit", picked);
+          finish(opts, cursor, "commit", picked);
           cleanup();
           resolve(picked.id);
         }
       }
     };
+
+    void region;
 
     try {
       stdin.setRawMode(true);
@@ -143,25 +156,51 @@ export class SelectCancelled extends Error {
   }
 }
 
-function renderList<T extends string>(items: ReadonlyArray<SelectItem<T>>, cursor: number): void {
-  for (let i = 0; i < items.length; i++) {
-    stdout.write(formatRow(items[i] as SelectItem<T>, i === cursor) + "\n");
+function drawInitial<T extends string>(opts: SelectOptions<T>, cursor: number): void {
+  if (opts.region) {
+    opts.region.render(composeScreen(opts, cursor));
+    return;
+  }
+  stdout.write(`${opts.label}\n`);
+  stdout.write(paint.dim("  (arrows to move, enter to select, Ctrl+C to cancel)\n"));
+  for (let i = 0; i < opts.items.length; i++) {
+    stdout.write(formatRow(opts.items[i] as SelectItem<T>, i === cursor) + "\n");
   }
 }
 
-function redraw<T extends string>(items: ReadonlyArray<SelectItem<T>>, cursor: number): void {
-  // Move back to the first list row and rewrite each line.
-  stdout.write(ansi.moveUp(items.length));
-  for (let i = 0; i < items.length; i++) {
-    stdout.write(ansi.clearLine + formatRow(items[i] as SelectItem<T>, i === cursor) + "\n");
+function redraw<T extends string>(opts: SelectOptions<T>, cursor: number): void {
+  if (opts.region) {
+    opts.region.render(composeScreen(opts, cursor));
+    return;
+  }
+  // Legacy mode: only the items list is dynamic, walk back over it.
+  stdout.write(ansi.moveUp(opts.items.length));
+  for (let i = 0; i < opts.items.length; i++) {
+    stdout.write(ansi.clearLine + formatRow(opts.items[i] as SelectItem<T>, i === cursor) + "\n");
   }
 }
 
 /**
- * After a commit/abort: replace the multi-line list with a single summary
- * line so the scrollback stays tidy. Returns cursor to a fresh line.
+ * Wrap up the picker after the user commits or aborts. In region mode
+ * the parent menu loop will overwrite the region with its next screen,
+ * so we just leave the picker visible until that happens; the swap
+ * looks instantaneous. In legacy mode we collapse the multi-line list
+ * into a one-line summary so scrollback stays tidy.
  */
-function finishWithList<T extends string>(
+function finish<T extends string>(
+  opts: SelectOptions<T>,
+  cursor: number,
+  outcome: "commit" | "abort",
+  picked?: SelectItem<T>,
+): void {
+  if (opts.region) {
+    if (outcome === "abort") opts.region.close();
+    return;
+  }
+  legacySummary(opts.items, cursor, outcome, picked);
+}
+
+function legacySummary<T extends string>(
   items: ReadonlyArray<SelectItem<T>>,
   cursor: number,
   outcome: "commit" | "abort",
@@ -171,7 +210,6 @@ function finishWithList<T extends string>(
   for (let i = 0; i < items.length; i++) {
     stdout.write(ansi.clearLine + (i === items.length - 1 ? "" : "\n"));
   }
-  // Replace the last cleared row with a summary.
   stdout.write(ansi.clearLine);
   if (outcome === "commit" && picked) {
     stdout.write(`  ${paint.green("\u2713")} ${paint.bold(picked.label)}\n`);
@@ -179,6 +217,21 @@ function finishWithList<T extends string>(
     stdout.write(`  ${paint.red("\u2717")} ${paint.dim("cancelled")}\n`);
   }
   void cursor;
+}
+
+function composeScreen<T extends string>(opts: SelectOptions<T>, cursor: number): string {
+  let out = "";
+  if (opts.header) {
+    out += opts.header.endsWith("\n") ? opts.header : opts.header + "\n";
+  }
+  out += `${opts.label}\n`;
+  out += paint.dim("  (arrows to move, enter to select, Ctrl+C to cancel)\n");
+  for (let i = 0; i < opts.items.length; i++) {
+    const item = opts.items[i];
+    if (!item) continue;
+    out += formatRow(item, i === cursor) + "\n";
+  }
+  return out;
 }
 
 function formatRow<T extends string>(item: SelectItem<T>, selected: boolean): string {
