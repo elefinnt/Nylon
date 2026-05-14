@@ -61,7 +61,7 @@ export async function runExtractCommand(input: ExtractCommandInput): Promise<num
       stdout.write(
         `${paint.red("✗")} Pushing to ClickUp needs an interactive terminal.\n` +
           `  Run with ${paint.bold("--dry")} to extract and preview the plan only, ` +
-          `or use ${paint.bold("nylon menu")} → Task exporter.\n`,
+          `or open ${paint.bold("nylon")} interactively and use Task exporter.\n`,
       );
       return 2;
     }
