@@ -62,6 +62,25 @@ test("providers takes no arguments", () => {
   assert.deepEqual(out.command, { kind: "providers" });
 });
 
+test("menu maps to the menu command", () => {
+  const out = parseArgv(["menu"]);
+  assert.equal(out.kind, "command");
+  if (out.kind !== "command") return;
+  assert.deepEqual(out.command, { kind: "menu" });
+});
+
+test("menu --help routes to its help topic", () => {
+  const out = parseArgv(["menu", "--help"]);
+  assert.equal(out.kind, "command");
+  if (out.kind !== "command") return;
+  assert.deepEqual(out.command, { kind: "help", topic: "menu" });
+});
+
+test("menu rejects unexpected arguments", () => {
+  const out = parseArgv(["menu", "extra"]);
+  assert.equal(out.kind, "error");
+});
+
 test("review parses url + dry + provider/model overrides", () => {
   const out = parseArgv([
     "review",
