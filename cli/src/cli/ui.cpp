@@ -62,7 +62,7 @@ PickResult pick_provider_and_model(ipc::NodeProcess& agent,
                                    const config::Config& cfg) {
     const auto providers = agent.list_providers();
     if (providers.empty()) {
-        return PickError{"No providers are available. Run `pr-review init` first."};
+        return PickError{"No providers are available. Run `nylon init` first."};
     }
 
     auto provider_id = defaulted(args.provider, cfg.defaults.provider);
@@ -120,7 +120,7 @@ PickResult pick_provider_and_model(ipc::NodeProcess& agent,
 }
 
 void open_in_editor(const std::string& path) {
-#if defined(PR_REVIEW_PLATFORM_WINDOWS)
+#if defined(NYLON_PLATFORM_WINDOWS)
     std::string cmd = "notepad \"" + path + "\"";
 #else
     const char* env_editor = std::getenv("EDITOR");
