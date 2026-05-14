@@ -8,7 +8,7 @@ import { parseRequestLine, writeEvent } from "./protocol.js";
 async function main(): Promise<void> {
   const argv = processArgv.slice(2);
 
-  // Argv mode: the user invoked us as `pr-review …` from a shell.
+  // Argv mode: the user invoked us as `nylon …` from a shell.
   // Anything with arguments goes through the human-friendly CLI.
   if (argv.length > 0) {
     const outcome = await runCli(argv);

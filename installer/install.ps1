@@ -1,9 +1,9 @@
 <#
 .SYNOPSIS
-    Install or uninstall the pr-review CLI on Windows.
+    Install or uninstall the Nylon CLI on Windows.
 
 .DESCRIPTION
-    Copies pr-review.exe and the agent into %LOCALAPPDATA%\pr-agent,
+    Copies nylon.exe and the agent into %LOCALAPPDATA%\nylon,
     adds that folder to the current user's PATH, and verifies Node 22+ is
     installed. Run with -Uninstall to remove.
 
@@ -16,7 +16,7 @@
 [CmdletBinding()]
 param(
     [switch]$Uninstall,
-    [string]$InstallRoot = (Join-Path $env:LOCALAPPDATA "pr-agent")
+    [string]$InstallRoot = (Join-Path $env:LOCALAPPDATA "nylon")
 )
 
 $ErrorActionPreference = "Stop"
@@ -61,7 +61,7 @@ function Remove-FromUserPath($folder) {
 }
 
 function Lock-DownConfig {
-    $configDir = Join-Path $env:USERPROFILE ".pr-agent"
+    $configDir = Join-Path $env:USERPROFILE ".nylon"
     $configFile = Join-Path $configDir "config.toml"
     if (-not (Test-Path $configFile)) { return }
     try {
@@ -74,23 +74,23 @@ function Lock-DownConfig {
 
 function Do-Install {
     $sourceDir = Split-Path -Parent $PSCommandPath | Split-Path -Parent
-    $sourceBinary = Join-Path $sourceDir "pr-review.exe"
+    $sourceBinary = Join-Path $sourceDir "nylon.exe"
     $sourceAgent = Join-Path $sourceDir "agent"
 
     if (-not (Test-Path $sourceBinary)) {
-        throw "Cannot find pr-review.exe next to the installer. Run install.ps1 from the extracted release zip."
+        throw "Cannot find nylon.exe next to the installer. Run install.ps1 from the extracted release zip."
     }
     if (-not (Test-Path $sourceAgent)) {
         throw "Cannot find the agent folder next to the installer. The release zip is incomplete."
     }
 
-    Write-Step "Installing pr-agent into $InstallRoot"
+    Write-Step "Installing Nylon into $InstallRoot"
     if (Test-Path $InstallRoot) {
         Remove-Item -Recurse -Force $InstallRoot
     }
     New-Item -ItemType Directory -Force -Path $InstallRoot | Out-Null
 
-    Copy-Item $sourceBinary (Join-Path $InstallRoot "pr-review.exe")
+    Copy-Item $sourceBinary (Join-Path $InstallRoot "nylon.exe")
     Copy-Item -Recurse $sourceAgent (Join-Path $InstallRoot "agent")
 
     Write-Step "Adding $InstallRoot to your user PATH"
@@ -115,9 +115,9 @@ function Do-Install {
     Write-Host ""
     Write-Host "Done. Next steps:" -ForegroundColor Green
     Write-Host "  1. Close and reopen your terminal."
-    Write-Host "  2. Run:  pr-review init"
+    Write-Host "  2. Run:  nylon init"
     Write-Host "  3. Fill in your GitHub PAT and at least one provider API key."
-    Write-Host "  4. Run:  pr-review <pull-request-url>"
+    Write-Host "  4. Run:  nylon <pull-request-url>"
 }
 
 function Do-Uninstall {
@@ -137,7 +137,7 @@ function Do-Uninstall {
     }
 
     Write-Host ""
-    Write-Host "pr-agent uninstalled. Your ~/.pr-agent folder was left in place." -ForegroundColor Green
+    Write-Host "Nylon uninstalled. Your ~/.nylon folder was left in place." -ForegroundColor Green
 }
 
 if ($Uninstall) {

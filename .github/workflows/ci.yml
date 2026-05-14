@@ -34,13 +34,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Typecheck
-        run: pnpm -F @pr-agent/agent typecheck
+        run: pnpm -F @nylon/agent typecheck
 
       - name: Build
-        run: pnpm -F @pr-agent/agent build
+        run: pnpm -F @nylon/agent build
 
       - name: Test
-        run: pnpm -F @pr-agent/agent test
+        run: pnpm -F @nylon/agent test
 
       - name: Upload agent dist
         uses: actions/upload-artifact@v4
@@ -88,5 +88,5 @@ jobs:
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
-          name: pr-review-windows-x64
-          path: cli/build/windows-x64/pr-review.exe
+          name: nylon-windows-x64
+          path: cli/build/windows-x64/nylon.exe

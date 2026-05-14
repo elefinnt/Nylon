@@ -1,13 +1,12 @@
 {
-  "name": "@pr-agent/agent",
+  "name": "@nylon/agent",
   "version": "0.2.0",
   "private": true,
-  "description": "Node + TypeScript backend for the pr-review CLI.",
+  "description": "Node + TypeScript backend for the Nylon CLI.",
   "type": "module",
   "main": "./dist/index.js",
   "bin": {
-    "pr-review": "./dist/index.js",
-    "pr-agent-agent": "./dist/index.js"
+    "nylon": "./dist/index.js"
   },
   "engines": {
     "node": ">=22"

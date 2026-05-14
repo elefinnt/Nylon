@@ -16,9 +16,9 @@
 
 ---
 
-# Nylon (`pr-review`)
+# Nylon (`nylon`)
 
-`pr-review` is a command-line tool that posts AI-generated code reviews onto
+`nylon` is a command-line tool that posts AI-generated code reviews onto
 GitHub pull requests for you. Point it at a PR URL, it downloads the PR, asks
 an AI model (Anthropic Claude, OpenAI GPT, or Cursor's Composer) to review the
 diff, and then posts a real GitHub review back with inline comments on the
@@ -29,7 +29,7 @@ a three-pass pipeline (intent &rarr; inline comments &rarr; synthesis) which
 produces noticeably tighter, less hallucinated reviews on bigger PRs.
 
 ```
-$ pr-review https://github.com/acme/widgets/pull/42
+$ nylon https://github.com/acme/widgets/pull/42
 ? Provider:  > Cursor    Anthropic Claude    OpenAI
 ? Model:     > composer-2
   Fetching PR ............ 12 files, 480 lines
@@ -71,8 +71,8 @@ slow, manual job. Nylon automates the first pass of that job using a large
 language model (LLM) so that a human reviewer can skip straight to the
 interesting bits.
 
-You install one program (`pr-review`), give it a couple of API keys, and from
-then on running `pr-review <pr-url>` is enough to land a review on GitHub.
+You install one program (`nylon`), give it a couple of API keys, and from
+then on running `nylon <pr-url>` is enough to land a review on GitHub.
 
 > Note on words: an "LLM" or "AI model" here just means an external paid
 > service such as Anthropic Claude or OpenAI GPT. We send the diff to them
@@ -90,12 +90,12 @@ Here is the same idea as a picture:
 ```mermaid
 flowchart LR
     User([You, in a terminal])
-    CLI["pr-review.exe<br/>(C++ binary)"]
+    CLI["nylon.exe<br/>(C++ binary)"]
     Agent["agent<br/>(Node.js + TypeScript)"]
     GH["GitHub REST API"]
     Prov["AI provider<br/>(Claude / GPT / Cursor)"]
 
-    User -- "pr-review &lt;url&gt;" --> CLI
+    User -- "nylon &lt;url&gt;" --> CLI
     CLI -- "spawns + sends JSON" --> Agent
     Agent -- "JSON progress events" --> CLI
     CLI -- "pretty progress" --> User
@@ -104,7 +104,7 @@ flowchart LR
     Prov -- "review text" --> Agent
 ```
 
-Step by step, when you run `pr-review https://github.com/acme/widgets/pull/42`:
+Step by step, when you run `nylon https://github.com/acme/widgets/pull/42`:
 
 1. The **C++ binary** parses your arguments, reads a little bit of your
    config so it can show you the right menu, and (if needed) shows an
@@ -141,7 +141,7 @@ the other one is bad at:
 
 - **C++ (the CLI)** ships as a single small `.exe`. It starts instantly,
   draws a nice TUI (terminal user interface) using FTXUI, and does not need
-  Node.js to launch. That means you can put `pr-review` on PATH and forget
+  Node.js to launch. That means you can put `nylon` on PATH and forget
   about it.
 - **TypeScript (the agent)** has first-class SDKs for GitHub, Anthropic,
   OpenAI and Cursor, plus easy JSON parsing and validation with Zod. Doing
@@ -171,7 +171,7 @@ contributes its own system-prompt block. Activating all three on the
 On Anthropic / OpenAI the skills still tighten the single-pass prompt &mdash;
 full pipeline support for those providers is on the roadmap.
 
-Enable them in `~\.pr-agent\config.toml`:
+Enable them in `~\.nylon\config.toml`:
 
 ```toml
 [review]
@@ -193,7 +193,7 @@ labels = false
 Browse the catalogue and copy the skill IDs interactively with:
 
 ```powershell
-pr-review menu
+nylon menu
 # -> Skills -> pick one to see its description and ID
 ```
 
@@ -204,14 +204,14 @@ pr-review menu
 If you do not want to remember every flag, run:
 
 ```powershell
-pr-review menu
+nylon menu
 ```
 
 That opens a top-level menu with the animated NYLON banner and three
 sections:
 
 - **PR agent** &mdash; jumping-off point for reviews, `init`, and listing
-  providers. The actions point at the corresponding `pr-review`
+  providers. The actions point at the corresponding `nylon`
   subcommands for now while the UI is being filled in.
 - **Task exporter** &mdash; a scripted demo of the upcoming Monday.com /
   Jira / ClickUp sync flow. No data leaves your machine; it is purely a
@@ -231,7 +231,7 @@ The menu requires an interactive terminal &mdash; on CI it falls back to
 If you open the repo, here is what you are looking at and what each folder
 is for:
 
-- **`cli/`** &mdash; The C++20 source for the `pr-review` binary. It is
+- **`cli/`** &mdash; The C++20 source for the `nylon` binary. It is
   built with CMake and uses vcpkg to fetch its small set of dependencies
   (FTXUI for the TUI, nlohmann/json for JSON, etc.).
 - **`agent/`** &mdash; A Node.js + TypeScript workspace, managed with
@@ -241,7 +241,7 @@ is for:
   mode (so you can run the agent directly with `node dist/index.js ...`
   for debugging, without the C++ side).
 - **`installer/`** &mdash; A single PowerShell script, `install.ps1`,
-  that copies the binary and the agent into `%LOCALAPPDATA%\pr-agent\`,
+  that copies the binary and the agent into `%LOCALAPPDATA%\nylon\`,
   adds that folder to your user `PATH`, and verifies Node 22+ is
   installed. It also has an `-Uninstall` switch.
 - **`docs/`** &mdash; Long-form documentation: architecture, installation
@@ -257,7 +257,7 @@ binary if you ever want to script it (it speaks NDJSON on stdin/stdout).
 
 ## Installation (Windows)
 
-The supported way to install `pr-review` today is from a prebuilt release
+The supported way to install `nylon` today is from a prebuilt release
 zip. macOS and Linux installers are deferred for now (the source already
 builds on both &mdash; see [Building from source](#building-from-source)).
 
@@ -283,8 +283,8 @@ its own cannot review anything; it needs the agent next to it.
 ### 2. Grab a release
 
 1. Open the project's
-   [releases page](https://github.com/elefinnt/pr-agent/releases).
-2. Download `pr-agent-windows-x64.zip` from the latest release.
+   [releases page](https://github.com/elefinnt/nylon/releases).
+2. Download `nylon-windows-x64.zip` from the latest release.
 3. Right-click the zip and choose **Extract All**. Pick any folder you
    like; the installer will move things into the right place.
 
@@ -299,15 +299,15 @@ and run:
 
 The script does four things:
 
-1. Copies `pr-review.exe` and the `agent\` folder into
-   `%LOCALAPPDATA%\pr-agent\`. That is your user's local app data, so no
+1. Copies `nylon.exe` and the `agent\` folder into
+   `%LOCALAPPDATA%\nylon\`. That is your user's local app data, so no
    admin rights are needed.
-2. Adds `%LOCALAPPDATA%\pr-agent\` to your **user** `PATH` (not the
-   system `PATH`). This is what lets you type `pr-review` from any
+2. Adds `%LOCALAPPDATA%\nylon\` to your **user** `PATH` (not the
+   system `PATH`). This is what lets you type `nylon` from any
    terminal.
 3. Confirms you have Node 22+ on `PATH`, and warns you (without failing)
    if not.
-4. Locks down `~\.pr-agent\config.toml` so other Windows accounts on the
+4. Locks down `~\.nylon\config.toml` so other Windows accounts on the
    same machine cannot read your tokens, if the file exists yet.
 
 To uninstall later, run the same script with `-Uninstall`:
@@ -322,7 +322,7 @@ To uninstall later, run the same script with `-Uninstall`:
 reopen PowerShell, then sanity-check:
 
 ```powershell
-pr-review --version
+nylon --version
 ```
 
 If you see a version number, the binary and the agent are wired up
@@ -336,7 +336,7 @@ step above), see [docs/INSTALL.md](docs/INSTALL.md).
 
 ## Configuration: telling the tool who you are
 
-Before `pr-review` can do anything useful it needs three things:
+Before `nylon` can do anything useful it needs three things:
 
 1. A **GitHub Personal Access Token (PAT)** so it can read the PR and
    post the review on your behalf.
@@ -344,12 +344,12 @@ Before `pr-review` can do anything useful it needs three things:
 3. Optional default settings (your favourite provider, model, whether to
    post or just dry-run, which review skills to enable, etc.).
 
-All of that lives in a single TOML file at `~\.pr-agent\config.toml`
-(`%USERPROFILE%\.pr-agent\config.toml` on Windows). The easiest way to
+All of that lives in a single TOML file at `~\.nylon\config.toml`
+(`%USERPROFILE%\.nylon\config.toml` on Windows). The easiest way to
 create it is the interactive scaffold:
 
 ```powershell
-pr-review init
+nylon init
 ```
 
 That writes a template config with placeholders and opens it in your
@@ -404,13 +404,13 @@ in [docs/CONFIG.md](docs/CONFIG.md).
 ### Environment variables (optional)
 
 You do not have to keep secrets in `config.toml`. If any of these are
-set when `pr-review` starts, they take priority:
+set when `nylon` starts, they take priority:
 
-- GitHub token: `PR_AGENT_GITHUB_TOKEN`, `GITHUB_TOKEN`, `GH_TOKEN`
-- Anthropic: `ANTHROPIC_API_KEY` or `PR_AGENT_ANTHROPIC_KEY`
-- OpenAI: `OPENAI_API_KEY` or `PR_AGENT_OPENAI_KEY`
-- Cursor: `CURSOR_API_KEY` or `PR_AGENT_CURSOR_KEY`
-- Default provider: `PR_AGENT_PROVIDER`
+- GitHub token: `NYLON_GITHUB_TOKEN`, `GITHUB_TOKEN`, `GH_TOKEN`
+- Anthropic: `ANTHROPIC_API_KEY` or `NYLON_ANTHROPIC_KEY`
+- OpenAI: `OPENAI_API_KEY` or `NYLON_OPENAI_KEY`
+- Cursor: `CURSOR_API_KEY` or `NYLON_CURSOR_KEY`
+- Default provider: `NYLON_PROVIDER`
 
 A `.env` file in your current working directory is also loaded
 automatically. This is handy for CI or for keeping per-project
@@ -421,7 +421,7 @@ credentials.
 ## Your first review
 
 ```powershell
-pr-review https://github.com/<owner>/<repo>/pull/<number>
+nylon https://github.com/<owner>/<repo>/pull/<number>
 ```
 
 You will be prompted to pick a provider and model unless you have set
@@ -432,7 +432,7 @@ prints the URL of the review it just posted.
 If you want to **see what it would say before posting**, add `--dry`:
 
 ```powershell
-pr-review https://github.com/<owner>/<repo>/pull/<number> --dry
+nylon https://github.com/<owner>/<repo>/pull/<number> --dry
 ```
 
 That runs the whole pipeline but skips the final step. The summary is
@@ -446,15 +446,15 @@ collaborators can tell it apart from human review comments at a glance.
 ## Useful commands
 
 ```powershell
-pr-review menu                       # interactive: NYLON main menu
-pr-review init                       # interactive: GitHub token + provider + key
-pr-review providers                  # list providers and models known to the agent
-pr-review <pr-url>                   # default flow: review + post
-pr-review <pr-url> --dry             # run the review without posting
-pr-review <pr-url> -p anthropic -m claude-opus-4.5
-pr-review --verbose <pr-url>         # surface agent debug logs on stderr
-pr-review --help                     # full usage
-pr-review help review                # focused help on a specific subcommand
+nylon menu                       # interactive: NYLON main menu
+nylon init                       # interactive: GitHub token + provider + key
+nylon providers                  # list providers and models known to the agent
+nylon <pr-url>                   # default flow: review + post
+nylon <pr-url> --dry             # run the review without posting
+nylon <pr-url> -p anthropic -m claude-opus-4.5
+nylon --verbose <pr-url>         # surface agent debug logs on stderr
+nylon --help                     # full usage
+nylon help review                # focused help on a specific subcommand
 ```
 
 `--verbose` is the one to reach for if something looks wrong: it streams
@@ -503,7 +503,7 @@ cmake --build --preset windows-x64 --config Release
 ```
 
 The compiled binary lands at
-`cli\build\windows-x64\Release\pr-review.exe`.
+`cli\build\windows-x64\Release\nylon.exe`.
 
 ### Putting it together for local dev
 
@@ -512,8 +512,8 @@ where to find the agent. Point it at your local build with an
 environment variable:
 
 ```powershell
-$env:PR_AGENT_AGENT_PATH = "C:\path\to\pr-agent\agent\dist\index.js"
-.\cli\build\windows-x64\Release\pr-review.exe --version
+$env:NYLON_AGENT_PATH = "C:\path\to\nylon\agent\dist\index.js"
+.\cli\build\windows-x64\Release\nylon.exe --version
 ```
 
 In a packaged release the agent ships next to the binary and the CLI
@@ -554,7 +554,7 @@ are:
 
 A few problems that come up often:
 
-- **"`pr-review` is not recognised"** &mdash; Your terminal has a stale
+- **"`nylon` is not recognised"** &mdash; Your terminal has a stale
   `PATH`. Close every PowerShell / Terminal window and open a new one.
   If that still does not work, sign out of Windows and back in.
 - **"Node 22 or newer was not found on PATH"** &mdash; Install Node 22
@@ -565,9 +565,9 @@ A few problems that come up often:
   `providers.<id>.api_key` in `config.toml` or set the matching
   environment variable.
 - **Skill in `[review].skills` not recognised** &mdash; The agent logs a
-  warning and ignores it. Run `pr-review menu` &rarr; **Skills** to see
+  warning and ignores it. Run `nylon menu` &rarr; **Skills** to see
   the canonical IDs.
-- **`pr-review menu` says "this command needs an interactive terminal"**
+- **`nylon menu` says "this command needs an interactive terminal"**
   &mdash; You are running inside CI or with redirected stdin. Use the
   subcommands (`init`, `review`, `providers`) directly.
 - **GitHub `403` or `404`** &mdash; Almost always a token scope problem.
@@ -591,7 +591,7 @@ Nylon v0.2 is Windows-first and PR-review-first. Recently landed:
   `request_changes_on_issue`.
 - Auto-derived labels (`high-risk`, `needs-fixes`, `follow-up-needed`)
   and a `REQUEST_CHANGES` event when severity warrants it.
-- Interactive `pr-review menu` with PR agent, Task exporter and Skills
+- Interactive `nylon menu` with PR agent, Task exporter and Skills
   sections, animated banner, and live regions for in-place redraws.
 
 Coming next:

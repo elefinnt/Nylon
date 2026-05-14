@@ -54,11 +54,11 @@ const MONDAY: IntegrationMock = {
     { name: "Tech debt", hint: "rolling backlog" },
   ],
   tasks: [
-    { id: "M-4821", title: "Wire pr-agent menu animations", destination: "Sprint Q2-2026 / In progress" },
+    { id: "M-4821", title: "Wire nylon menu animations", destination: "Sprint Q2-2026 / In progress" },
     { id: "M-4822", title: "Mock task exporter pipeline", destination: "Sprint Q2-2026 / In progress" },
     { id: "M-4823", title: "Handle stdin not-a-TTY in menu", destination: "Bug triage / Triaged" },
     { id: "M-4824", title: "Cap files at 500 LOC across CLI", destination: "Tech debt / Todo" },
-    { id: "M-4825", title: "Document NO_COLOR + PR_AGENT_NO_ANIMATION", destination: "Tech debt / Todo" },
+    { id: "M-4825", title: "Document NO_COLOR + NYLON_NO_ANIMATION", destination: "Tech debt / Todo" },
   ],
   summaryUrl: "https://acme.monday.com/boards/4821/views/sprint-q2",
 };
@@ -145,7 +145,7 @@ export const EXTRACTED_TASK_POOL: ReadonlyArray<string> = [
   "Drop unused --legacy flag from review cmd",
   "Sync our PR template with .github/PULL_REQUEST_TEMPLATE.md",
   "Spike: swap pino for node:util.styleText logger",
-  "Add `pr-review doctor` command for env diagnostics",
+  "Add `nylon doctor` command for env diagnostics",
   "Wire monday.com client behind a feature flag",
   "Off-by-one in the progress bar suffix",
   "Tighten retries on github 5xx — currently fires twice",

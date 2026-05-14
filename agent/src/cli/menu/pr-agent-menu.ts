@@ -17,17 +17,17 @@ const ACTIONS = [
   {
     id: "review",
     label: "Review a pull request",
-    hint: "pr-review <pr-url>",
+    hint: "nylon <pr-url>",
   },
   {
     id: "configure",
     label: "Configure credentials",
-    hint: "pr-review init",
+    hint: "nylon init",
   },
   {
     id: "providers",
     label: "List providers and models",
-    hint: "pr-review providers",
+    hint: "nylon providers",
   },
 ] as const;
 

@@ -1,9 +1,9 @@
 {
   "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
-  "name": "pr-review",
+  "name": "nylon",
   "version-string": "0.1.0",
-  "description": "C++ CLI that drives the pr-agent Node backend.",
-  "homepage": "https://github.com/your-org/pr-agent",
+  "description": "C++ CLI that drives the Nylon Node backend.",
+  "homepage": "https://github.com/your-org/nylon",
   "license": "MIT",
   "dependencies": [
     "cli11",

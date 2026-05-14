@@ -1,8 +1,8 @@
 # Config reference
 
-`pr-review` reads a single TOML file at `~/.pr-agent/config.toml` (on Windows
-that resolves to `%USERPROFILE%\.pr-agent\config.toml`). The file is created
-for you when you run `pr-review init`.
+`nylon` reads a single TOML file at `~/.nylon/config.toml` (on Windows
+that resolves to `%USERPROFILE%\.nylon\config.toml`). The file is created
+for you when you run `nylon init`.
 
 ## Template
 
@@ -65,7 +65,7 @@ For fine-grained tokens, grant **Pull requests: read and write** plus
 ### `[providers.<id>]`
 
 One block per provider you want to enable. `id` must match a provider known
-to the agent (see `pr-review providers ls`).
+to the agent (see `nylon providers ls`).
 
 | Key             | Required | Notes                                                  |
 | --------------- | -------- | ------------------------------------------------------ |

@@ -124,7 +124,7 @@ export function writeEvent(event: AgentEvent): void {
  * Swap the sink that `writeEvent` writes to. Returns a restore function.
  *
  * The default sink writes NDJSON to stdout (the IPC protocol used by the
- * C++ CLI). The interactive `pr-review` CLI in `cli/` swaps it for a
+ * C++ CLI). The interactive `nylon` CLI in `cli/` swaps it for a
  * pretty TTY renderer.
  */
 export function setEventSink(sink: EventSink): () => void {

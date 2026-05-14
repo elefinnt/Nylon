@@ -18,7 +18,7 @@ export const ansi = {
 export function isAnimationEnabled(): boolean {
   if (!stdout.isTTY) return false;
   if (process.env["NO_COLOR"]) return false;
-  if (process.env["PR_AGENT_NO_ANIMATION"]) return false;
+  if (process.env["NYLON_NO_ANIMATION"]) return false;
   if (process.env["CI"]) return false;
   return true;
 }

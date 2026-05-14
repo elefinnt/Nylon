@@ -12,7 +12,7 @@ namespace pr::config {
 namespace {
 
 std::string home_directory() {
-#if defined(PR_REVIEW_PLATFORM_WINDOWS)
+#if defined(NYLON_PLATFORM_WINDOWS)
     if (const char* home = std::getenv("USERPROFILE")) return home;
     if (const char* drive = std::getenv("HOMEDRIVE")) {
         if (const char* path = std::getenv("HOMEPATH")) {
@@ -37,7 +37,7 @@ std::optional<std::string> opt_string(const toml::node_view<const toml::node>& n
 std::string default_config_path() {
     namespace fs = std::filesystem;
     fs::path p = home_directory();
-    p /= ".pr-agent";
+    p /= ".nylon";
     p /= "config.toml";
     return p.string();
 }
@@ -52,7 +52,7 @@ LoadResult load_from(const std::string& path) {
     if (!fs::exists(path)) {
         std::ostringstream msg;
         msg << "Config file not found at " << path << ".\n"
-            << "Run `pr-review init` to create it.";
+            << "Run `nylon init` to create it.";
         return LoadError{msg.str()};
     }
 

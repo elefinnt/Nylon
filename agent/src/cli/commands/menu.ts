@@ -5,7 +5,7 @@ import { Prompter } from "../prompts.js";
 import { paint } from "../render.js";
 
 /**
- * `pr-review menu` - interactive entry point. Opens the main menu and loops
+ * `nylon menu` - interactive entry point. Opens the main menu and loops
  * until the user picks Exit (or hits Ctrl+C). Requires a TTY because every
  * action is a prompt; in non-interactive contexts we tell the user to call
  * the per-command surface instead.
@@ -15,7 +15,7 @@ export async function runMenuCommand(): Promise<number> {
     stdout.write(
       `${paint.red("\u2717")} The menu needs an interactive terminal.\n` +
         paint.dim(
-          "  Pipe-driven sessions should call subcommands directly (try `pr-review --help`).\n",
+          "  Pipe-driven sessions should call subcommands directly (try `nylon --help`).\n",
         ),
     );
     return 2;

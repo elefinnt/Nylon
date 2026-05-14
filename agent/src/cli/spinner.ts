@@ -13,7 +13,7 @@ export interface SpinnerOptions {
 
 /**
  * A minimal animated spinner. Falls back to plain printing on non-TTY
- * streams or when NO_COLOR / CI / PR_AGENT_NO_ANIMATION is set, so the
+ * streams or when NO_COLOR / CI / NYLON_NO_ANIMATION is set, so the
  * NDJSON IPC mode and CI output stay clean.
  *
  * Lifecycle: `start(text)` -> optional `update(text)` (and `pause/resume`

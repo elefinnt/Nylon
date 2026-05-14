@@ -17,7 +17,7 @@ import { paint } from "./render.js";
  * NOTE on "secret": we deliberately DO NOT mask. Masked input via raw mode
  * breaks paste in many terminals (especially anything that wraps pastes in
  * bracketed-paste escape sequences). API keys end up in plaintext at
- * `~/.pr-agent/config.toml` anyway, so the masking-during-prompt step is
+ * `~/.nylon/config.toml` anyway, so the masking-during-prompt step is
  * mostly theatre. We use plain readline input which paste works in
  * universally and lets the user verify what they pasted.
  */

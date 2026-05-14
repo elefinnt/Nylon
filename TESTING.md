@@ -1,4 +1,4 @@
-# Testing pr-agent (early access)
+# Testing Nylon (early access)
 
 Thanks for trying this out. The polished installer isn't ready yet, so for
 now you'll run the agent through a thin wrapper. It takes about five
@@ -31,8 +31,8 @@ Extract it anywhere, then open a terminal in the extracted folder.
 ### If you were given the repo
 
 ```bash
-git clone <repo-url> pr-agent
-cd pr-agent
+git clone <repo-url> nylon
+cd nylon
 ```
 
 ## Install (one time)
@@ -42,13 +42,13 @@ From the project root (the folder containing this `TESTING.md`):
 ```powershell
 npm install -g pnpm     # if you don't already have pnpm
 pnpm install
-pnpm -F @pr-agent/agent build
+pnpm -F @nylon/agent build
 ```
 
 That last command produces `agent/dist/index.js`, which is what the
-`pr-review` wrapper runs.
+`nylon` wrapper runs.
 
-### Get a `pr-review` command on PATH
+### Get a `nylon` command on PATH
 
 Pick whichever you prefer. Both work; you only need one.
 
@@ -68,13 +68,13 @@ $env:Path = "$PWD\bin;$env:Path"   # this session only
 **Option B - global pnpm link:**
 
 ```powershell
-pnpm -F @pr-agent/agent link --global
+pnpm -F @nylon/agent link --global
 ```
 
 Either way, confirm it's wired up:
 
 ```powershell
-pr-review --version
+nylon --version
 ```
 
 ## Configure (interactive)
@@ -83,18 +83,18 @@ Run the setup wizard. It asks for your GitHub token, lets you pick a
 provider, then asks for that provider's API key. Keys you type are masked.
 
 ```powershell
-pr-review init
+nylon init
 ```
 
-It writes `C:\Users\<you>\.pr-agent\config.toml` (or `~/.pr-agent/config.toml`
-on macOS / Linux). Rerun `pr-review init` any time to overwrite.
+It writes `C:\Users\<you>\.nylon\config.toml` (or `~/.nylon/config.toml`
+on macOS / Linux). Rerun `nylon init` any time to overwrite.
 
 ## Dry run (does NOT post anything)
 
 Pick a PR on a repo you own and run:
 
 ```powershell
-pr-review https://github.com/YOU/YOUR_REPO/pull/1 --dry
+nylon https://github.com/YOU/YOUR_REPO/pull/1 --dry
 ```
 
 You'll see a stream of progress lines as the agent fetches the PR and
@@ -104,7 +104,7 @@ Nothing is posted to GitHub on a dry run.
 To override the configured provider/model for a single run:
 
 ```powershell
-pr-review https://github.com/YOU/YOUR_REPO/pull/1 --dry -p openai -m gpt-5
+nylon https://github.com/YOU/YOUR_REPO/pull/1 --dry -p openai -m gpt-5
 ```
 
 ## Post for real
@@ -112,7 +112,7 @@ pr-review https://github.com/YOU/YOUR_REPO/pull/1 --dry -p openai -m gpt-5
 Same command without `--dry`:
 
 ```powershell
-pr-review https://github.com/YOU/YOUR_REPO/pull/1
+nylon https://github.com/YOU/YOUR_REPO/pull/1
 ```
 
 The final line includes the URL of the posted review.
@@ -120,10 +120,10 @@ The final line includes the URL of the posted review.
 ## Other useful commands
 
 ```powershell
-pr-review --help              # full usage
-pr-review help review         # help for a specific subcommand
-pr-review providers           # list providers + models the agent knows about
-pr-review --verbose <url>     # surface debug logs from the agent
+nylon --help              # full usage
+nylon help review         # help for a specific subcommand
+nylon providers           # list providers + models the agent knows about
+nylon --verbose <url>     # surface debug logs from the agent
 ```
 
 ## If something goes wrong
@@ -133,7 +133,7 @@ the project owner. Common ones:
 
 | `code`                     | Means                                                    |
 | -------------------------- | -------------------------------------------------------- |
-| `CONFIG_MISSING`           | Run `pr-review init`.                                    |
+| `CONFIG_MISSING`           | Run `nylon init`.                                        |
 | `CONFIG_PLACEHOLDER`       | A `replace_me` is still in `config.toml`. Rerun init.    |
 | `PROVIDER_NOT_CONFIGURED`  | Picked a provider that has no key. Rerun init.           |
 | `Bad credentials` (GitHub) | PAT is wrong or missing the `repo` scope.                |

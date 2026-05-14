@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# POSIX shim so users can put `<repo>/bin` on PATH and run `pr-review`
+# POSIX shim so users can put `<repo>/bin` on PATH and run `nylon`
 # directly without needing `pnpm link`.
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 exec node "$DIR/../agent/dist/index.js" "$@"

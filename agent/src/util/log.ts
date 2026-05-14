@@ -4,7 +4,7 @@ import pino from "pino";
 // on stdout. The CLI surfaces them only when run with --verbose.
 export const logger = pino(
   {
-    level: process.env["PR_AGENT_LOG_LEVEL"] ?? "info",
+    level: process.env["NYLON_LOG_LEVEL"] ?? "info",
     base: undefined,
     timestamp: pino.stdTimeFunctions.isoTime,
   },

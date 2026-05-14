@@ -5,10 +5,10 @@ import { paint } from "../render.js";
 
 const TOPICS: Record<string, string> = {
   init:
-    `${paint.bold("pr-review init")}\n\n` +
+    `${paint.bold("nylon init")}\n\n` +
     `  Walks you through entering your GitHub Personal Access Token,\n` +
     `  picking a provider (Cursor / OpenAI / Anthropic), and pasting the\n` +
-    `  matching API key. Writes ~/.pr-agent/config.toml.\n\n` +
+    `  matching API key. Writes ~/.nylon/config.toml.\n\n` +
     `  If GITHUB_TOKEN, OPENAI_API_KEY, ANTHROPIC_API_KEY or CURSOR_API_KEY\n` +
     `  are already in the environment (or in a .env file in the current\n` +
     `  directory) the matching prompt is skipped automatically.\n\n` +
@@ -16,14 +16,14 @@ const TOPICS: Record<string, string> = {
     `    -f, --force         Skip the "config already exists" warning.\n` +
     `        --from-env      Don't prompt at all - take everything from env.\n` +
     `                        Requires GITHUB_TOKEN and one *_API_KEY.\n` +
-    `                        Use PR_AGENT_PROVIDER if multiple keys are set.\n`,
+    `                        Use NYLON_PROVIDER if multiple keys are set.\n`,
 
   providers:
-    `${paint.bold("pr-review providers")}\n\n` +
+    `${paint.bold("nylon providers")}\n\n` +
     `  Lists the providers and models the agent knows about.\n`,
 
   menu:
-    `${paint.bold("pr-review menu")}\n\n` +
+    `${paint.bold("nylon menu")}\n\n` +
     `  Opens an interactive main menu with two sections:\n` +
     `    - ${paint.bold("PR agent")}       AI code reviews on GitHub pull requests.\n` +
     `    - ${paint.bold("Task exporter")}  Sync work items with Monday, Jira, ClickUp.\n\n` +
@@ -31,7 +31,7 @@ const TOPICS: Record<string, string> = {
     `  and exit with Ctrl+C. Requires an interactive terminal.\n`,
 
   review:
-    `${paint.bold("pr-review review <pr-url>")} (alias: ${paint.bold("pr-review <pr-url>")})\n\n` +
+    `${paint.bold("nylon review <pr-url>")} (alias: ${paint.bold("nylon <pr-url>")})\n\n` +
     `  Runs an AI code review against a GitHub pull request. By default\n` +
     `  the review IS posted to the PR (matching your config). Use --dry to\n` +
     `  preview without posting.\n\n` +
@@ -52,33 +52,33 @@ export function runHelpCommand(topic?: string): number {
 }
 
 export function runVersionCommand(): number {
-  stdout.write(`pr-review ${pkgVersion}\n`);
+  stdout.write(`nylon ${pkgVersion}\n`);
   return 0;
 }
 
 function renderRootHelp(): string {
   return [
-    `${paint.bold("pr-review")} - post AI code reviews onto GitHub pull requests`,
+    `${paint.bold("nylon")} - post AI code reviews onto GitHub pull requests`,
     "",
     `${paint.bold("Usage")}`,
-    `  pr-review menu                       ${paint.dim("Open the interactive main menu")}`,
-    `  pr-review init                       ${paint.dim("Set up GitHub token + provider key (interactive)")}`,
-    `  pr-review providers                  ${paint.dim("List providers and models")}`,
-    `  pr-review review <pr-url> [flags]    ${paint.dim("Run a review")}`,
-    `  pr-review <pr-url> [flags]           ${paint.dim("Same as `review <pr-url>`")}`,
+    `  nylon menu                       ${paint.dim("Open the interactive main menu")}`,
+    `  nylon init                       ${paint.dim("Set up GitHub token + provider key (interactive)")}`,
+    `  nylon providers                  ${paint.dim("List providers and models")}`,
+    `  nylon review <pr-url> [flags]    ${paint.dim("Run a review")}`,
+    `  nylon <pr-url> [flags]           ${paint.dim("Same as `review <pr-url>`")}`,
     "",
     `${paint.bold("Common flags")}`,
     `  -n, --dry              Don't post the review back to GitHub`,
     `  -p, --provider <id>    Override the configured provider`,
     `  -m, --model <id>       Override the configured model`,
     `  -v, --verbose          Show debug logs`,
-    `  -h, --help [topic]     Show help (try ${paint.bold("pr-review help review")})`,
+    `  -h, --help [topic]     Show help (try ${paint.bold("nylon help review")})`,
     `  -V, --version          Print the version`,
     "",
     `${paint.bold("Examples")}`,
-    `  pr-review init`,
-    `  pr-review https://github.com/acme/widgets/pull/42 --dry`,
-    `  pr-review review https://github.com/acme/widgets/pull/42 -p openai`,
+    `  nylon init`,
+    `  nylon https://github.com/acme/widgets/pull/42 --dry`,
+    `  nylon review https://github.com/acme/widgets/pull/42 -p openai`,
     "",
   ].join("\n") + "\n";
 }

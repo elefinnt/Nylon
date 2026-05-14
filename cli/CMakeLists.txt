@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.25)
 
-project(pr_review
+project(nylon
     VERSION 0.1.0
-    DESCRIPTION "pr-review C++ CLI"
+    DESCRIPTION "Nylon C++ CLI"
     LANGUAGES CXX
 )
 
@@ -23,7 +23,7 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(tomlplusplus CONFIG REQUIRED)
 find_package(reproc++ CONFIG REQUIRED)
 
-set(PR_REVIEW_SOURCES
+set(NYLON_SOURCES
     src/main.cpp
     src/cli/args.cpp
     src/cli/output.cpp
@@ -33,11 +33,11 @@ set(PR_REVIEW_SOURCES
     src/ipc/node_process.cpp
 )
 
-add_executable(pr-review ${PR_REVIEW_SOURCES})
+add_executable(nylon ${NYLON_SOURCES})
 
-target_include_directories(pr-review PRIVATE src)
+target_include_directories(nylon PRIVATE src)
 
-target_link_libraries(pr-review PRIVATE
+target_link_libraries(nylon PRIVATE
     CLI11::CLI11
     ftxui::screen
     ftxui::dom
@@ -47,19 +47,19 @@ target_link_libraries(pr-review PRIVATE
     reproc++
 )
 
-target_compile_definitions(pr-review PRIVATE
-    PR_REVIEW_VERSION="${PROJECT_VERSION}"
+target_compile_definitions(nylon PRIVATE
+    NYLON_VERSION="${PROJECT_VERSION}"
 )
 
 if(WIN32)
-    target_compile_definitions(pr-review PRIVATE PR_REVIEW_PLATFORM_WINDOWS=1)
+    target_compile_definitions(nylon PRIVATE NYLON_PLATFORM_WINDOWS=1)
 elseif(APPLE)
-    target_compile_definitions(pr-review PRIVATE PR_REVIEW_PLATFORM_MACOS=1)
+    target_compile_definitions(nylon PRIVATE NYLON_PLATFORM_MACOS=1)
 else()
-    target_compile_definitions(pr-review PRIVATE PR_REVIEW_PLATFORM_LINUX=1)
+    target_compile_definitions(nylon PRIVATE NYLON_PLATFORM_LINUX=1)
 endif()
 
-install(TARGETS pr-review RUNTIME DESTINATION .)
+install(TARGETS nylon RUNTIME DESTINATION .)
 
 enable_testing()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")

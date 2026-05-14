@@ -1,6 +1,6 @@
 # Install guide
 
-This page covers installing `pr-review` on Windows. macOS and Linux installers
+This page covers installing `nylon` on Windows. macOS and Linux installers
 are on the roadmap; the source already builds on those platforms via CMake.
 
 ## Prerequisites
@@ -17,8 +17,8 @@ If Node is missing, install the LTS from
 
 ## Installing from a release
 
-1. Open the [releases page](https://github.com/your-org/pr-agent/releases)
-   and download the latest `pr-agent-windows-x64.zip`.
+1. Open the [releases page](https://github.com/your-org/nylon/releases)
+   and download the latest `nylon-windows-x64.zip`.
 2. Right-click the zip and choose **Extract All**.
 3. Open PowerShell in the extracted folder and run:
 
@@ -27,7 +27,7 @@ If Node is missing, install the LTS from
    ```
 
    The script:
-   - Copies the binary and the agent into `%LOCALAPPDATA%\pr-agent\`.
+   - Copies the binary and the agent into `%LOCALAPPDATA%\nylon\`.
    - Adds that folder to your user `PATH`.
    - Verifies Node 22+ is on the `PATH`.
    - Prints the next-step commands.
@@ -35,7 +35,7 @@ If Node is missing, install the LTS from
 4. Close and reopen your terminal so the new `PATH` is picked up, then check:
 
    ```powershell
-   pr-review --version
+   nylon --version
    ```
 
 ## Configure
@@ -43,10 +43,10 @@ If Node is missing, install the LTS from
 Run the interactive scaffold:
 
 ```powershell
-pr-review init
+nylon init
 ```
 
-It writes `~\.pr-agent\config.toml` with placeholders and opens it in your
+It writes `~\.nylon\config.toml` with placeholders and opens it in your
 default editor. Fill in:
 
 - A GitHub Personal Access Token with `repo` (read) and `pull_request:write`.
@@ -57,7 +57,7 @@ Full reference: [CONFIG.md](CONFIG.md).
 ## First review
 
 ```powershell
-pr-review https://github.com/<owner>/<repo>/pull/<number>
+nylon https://github.com/<owner>/<repo>/pull/<number>
 ```
 
 You will be prompted to pick a provider and model unless you set
@@ -69,7 +69,7 @@ You will be prompted to pick a provider and model unless you set
 .\installer\install.ps1 -Uninstall
 ```
 
-That removes the install folder and the `PATH` entry. Your `~\.pr-agent\`
+That removes the install folder and the `PATH` entry. Your `~\.nylon\`
 folder is left in place so you do not lose your API keys on accident.
 
 ## Building from source

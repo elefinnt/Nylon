@@ -22,7 +22,7 @@ export async function runCli(argv: readonly string[]): Promise<CliRunOutcome> {
 
   if (parsed.kind === "error") {
     stderr.write(`${paint.red("✗")} ${parsed.message}\n`);
-    stderr.write(`  Run ${paint.bold("pr-review --help")} for usage.\n`);
+    stderr.write(`  Run ${paint.bold("nylon --help")} for usage.\n`);
     return { kind: "exit", code: parsed.exitCode };
   }
 

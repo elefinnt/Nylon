@@ -24,7 +24,7 @@ export async function runReviewCommand(input: ReviewCommandInput): Promise<numbe
     const e = toAgentError(err);
     stdout.write(
       `${paint.red("✗")} ${paint.bold(e.code)}: ${e.message}\n` +
-        `  Run ${paint.bold("pr-review init")} first.\n`,
+        `  Run ${paint.bold("nylon init")} first.\n`,
     );
     return 2;
   }
@@ -42,7 +42,7 @@ export async function runReviewCommand(input: ReviewCommandInput): Promise<numbe
   if (!providerCfg?.api_key) {
     stdout.write(
       `${paint.red("✗")} Provider ${paint.bold(providerId)} is not configured ` +
-        `in ${config.sourcePath}. Run ${paint.bold("pr-review init")} again.\n`,
+        `in ${config.sourcePath}. Run ${paint.bold("nylon init")} again.\n`,
     );
     return 2;
   }
@@ -66,7 +66,7 @@ export async function runReviewCommand(input: ReviewCommandInput): Promise<numbe
   });
 
   stdout.write(
-    `${paint.bold("pr-review")} ${paint.dim(input.dry ? "(dry run)" : "")}\n` +
+    `${paint.bold("nylon")} ${paint.dim(input.dry ? "(dry run)" : "")}\n` +
       `  ${paint.dim("PR:        ")} ${input.url}\n` +
       `  ${paint.dim("Provider:  ")} ${providerId}\n` +
       `  ${paint.dim("Model:     ")} ${modelId}\n` +
