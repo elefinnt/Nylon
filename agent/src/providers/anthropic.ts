@@ -6,6 +6,7 @@ import type {
   ProviderRunContext,
   ReviewInput,
   ReviewOutput,
+  RunPromptArgs,
 } from "./types.js";
 import { buildUserPrompt, loadSystemPrompt } from "./prompts/user.js";
 import { extractReviewJson } from "./json.js";
@@ -23,14 +24,7 @@ export class AnthropicProvider implements AiProvider {
   ];
 
   async review(input: ReviewInput, ctx: ProviderRunContext): Promise<ReviewOutput> {
-    if (!ctx.apiKey) {
-      throw new AgentError(
-        "PROVIDER_MISSING_KEY",
-        "providers.anthropic.api_key is not set. Run `nylon init` and add an Anthropic API key.",
-      );
-    }
-    const client = new Anthropic({ apiKey: ctx.apiKey, baseURL: ctx.baseUrl });
-
+    const client = this.client(ctx);
     const system = loadSystemPrompt(ctx.skills);
     const user = buildUserPrompt(input.pr);
 
@@ -40,19 +34,41 @@ export class AnthropicProvider implements AiProvider {
     let lastErrorPreview: string | undefined;
     while (attempt < 2) {
       attempt++;
-      const text = await this.stream(client, ctx, system, attempt === 2 ? this.retryUser(user, lastErrorPreview) : user);
+      const text = await this.stream(
+        client,
+        ctx,
+        system,
+        attempt === 2 ? retryUser(user, lastErrorPreview) : user,
+      );
       try {
         return extractReviewJson(text);
       } catch (err: unknown) {
         if (err instanceof AgentError && err.code.startsWith("MODEL_") && attempt < 2) {
           lastErrorPreview = err.message;
-          ctx.onLog("warn", `Anthropic output rejected (${err.code}); retrying with stricter instructions.`);
+          ctx.onLog("warn", `Anthropic output rejected (${err.code}); retrying.`);
           continue;
         }
         throw err;
       }
     }
     throw new AgentError("PROVIDER_GAVE_UP", "Anthropic did not return a valid review after retries.");
+  }
+
+  async runPrompt(args: RunPromptArgs, ctx: ProviderRunContext): Promise<string> {
+    const client = this.client(ctx);
+    const label = args.stageLabel ? `${args.stageLabel}: ` : "";
+    ctx.onProgress(`${label}requesting`, { in: estimateTokens(args.system + args.user) });
+    return await this.stream(client, ctx, args.system, args.user);
+  }
+
+  private client(ctx: ProviderRunContext): Anthropic {
+    if (!ctx.apiKey) {
+      throw new AgentError(
+        "PROVIDER_MISSING_KEY",
+        "providers.anthropic.api_key is not set. Run `nylon init` and add an Anthropic API key.",
+      );
+    }
+    return new Anthropic({ apiKey: ctx.apiKey, baseURL: ctx.baseUrl });
   }
 
   private async stream(
@@ -64,7 +80,6 @@ export class AnthropicProvider implements AiProvider {
     let collected = "";
     let tokensIn = 0;
     let tokensOut = 0;
-
     try {
       const stream = client.messages.stream({
         model: ctx.model,
@@ -72,13 +87,11 @@ export class AnthropicProvider implements AiProvider {
         system,
         messages: [{ role: "user", content: user }],
       });
-
       stream.on("text", (delta) => {
         collected += delta;
         tokensOut += estimateTokens(delta);
         ctx.onProgress("streaming", { in: tokensIn, out: tokensOut });
       });
-
       const final = await stream.finalMessage();
       tokensIn = final.usage?.input_tokens ?? tokensIn;
       tokensOut = final.usage?.output_tokens ?? tokensOut;
@@ -91,17 +104,17 @@ export class AnthropicProvider implements AiProvider {
       );
     }
   }
+}
 
-  private retryUser(user: string, error?: string): string {
-    return [
-      "Your previous response did not match the required JSON schema:",
-      error ?? "(no details)",
-      "",
-      "Try again. Return ONLY the JSON object, with no prose or code fences.",
-      "",
-      user,
-    ].join("\n");
-  }
+function retryUser(user: string, error?: string): string {
+  return [
+    "Your previous response did not match the required JSON schema:",
+    error ?? "(no details)",
+    "",
+    "Try again. Return ONLY the JSON object, with no prose or code fences.",
+    "",
+    user,
+  ].join("\n");
 }
 
 function finalText(message: Anthropic.Messages.Message): string {
@@ -111,6 +124,5 @@ function finalText(message: Anthropic.Messages.Message): string {
 }
 
 function estimateTokens(text: string): number {
-  // Cheap, deterministic estimate so progress numbers move during streaming.
   return Math.ceil(text.length / 4);
 }
