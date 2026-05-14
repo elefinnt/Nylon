@@ -14,6 +14,7 @@ const PROVIDER_KEY_VARS: Record<string, readonly string[]> = {
 };
 
 const GITHUB_TOKEN_VARS = ["NYLON_GITHUB_TOKEN", "GITHUB_TOKEN", "GH_TOKEN"];
+const CLICKUP_TOKEN_VARS = ["CLICKUP_API_KEY", "NYLON_CLICKUP_TOKEN"];
 
 export interface EnvDiscovery {
   /** Token from env, if any. Includes which env var name supplied it. */
@@ -22,6 +23,8 @@ export interface EnvDiscovery {
   providerKeys: Map<string, { value: string; source: string }>;
   /** Provider id requested via env, if any. */
   preferredProvider?: { value: string; source: string };
+  /** ClickUp personal API token from env, if any. */
+  clickupToken?: { value: string; source: string };
   /** Whether a `.env` file in cwd was loaded. */
   dotEnvLoaded: boolean;
   dotEnvPath?: string;
@@ -44,6 +47,7 @@ export function discoverFromEnvironment(opts: { dotEnvPath?: string } = {}): Env
   }
 
   const preferredProvider = pickFirst(["NYLON_PROVIDER"]);
+  const clickupToken = pickFirst(CLICKUP_TOKEN_VARS);
 
   const result: EnvDiscovery = {
     providerKeys,
@@ -51,6 +55,7 @@ export function discoverFromEnvironment(opts: { dotEnvPath?: string } = {}): Env
   };
   if (githubToken) result.githubToken = githubToken;
   if (preferredProvider) result.preferredProvider = preferredProvider;
+  if (clickupToken) result.clickupToken = clickupToken;
   if (dotEnv.path) result.dotEnvPath = dotEnv.path;
   return result;
 }
@@ -89,4 +94,8 @@ export function listProviderKeyVars(providerId: string): readonly string[] {
 
 export function listGithubTokenVars(): readonly string[] {
   return GITHUB_TOKEN_VARS;
+}
+
+export function listClickUpTokenVars(): readonly string[] {
+  return CLICKUP_TOKEN_VARS;
 }
