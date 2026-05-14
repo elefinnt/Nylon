@@ -1,6 +1,6 @@
 {
   "name": "nylon",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Nylon - a CLI that posts AI code reviews onto GitHub pull requests.",
   "license": "MIT",

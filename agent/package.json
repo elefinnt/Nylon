@@ -1,6 +1,6 @@
 {
   "name": "@nylon/agent",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "Node + TypeScript backend for the Nylon CLI.",
   "type": "module",
