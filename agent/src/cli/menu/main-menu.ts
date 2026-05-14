@@ -3,9 +3,10 @@ import { LiveRegion } from "../live-region.js";
 import type { Prompter } from "../prompts.js";
 import { paint } from "../render.js";
 import { runPrAgentMenu } from "./pr-agent-menu.js";
+import { runSkillsMenu } from "./skills-menu.js";
 import { runTaskExporterMenu } from "./task-exporter-menu.js";
 
-type MainChoice = "pr-agent" | "task-exporter" | "exit";
+type MainChoice = "pr-agent" | "task-exporter" | "skills" | "exit";
 
 /**
  * Renders the top-level menu and dispatches into the chosen sub-menu.
@@ -33,6 +34,11 @@ export async function runMainMenu(prompter: Prompter): Promise<void> {
             label: "Task exporter",
             hint: "Sync with Monday, Jira, ClickUp",
           },
+          {
+            id: "skills",
+            label: "Skills",
+            hint: "Manage review skills",
+          },
           { id: "exit", label: "Exit" },
         ],
         { region, header: mainMenuHeader() },
@@ -46,6 +52,11 @@ export async function runMainMenu(prompter: Prompter): Promise<void> {
         }
         case "task-exporter": {
           const outcome = await runTaskExporterMenu(prompter, region);
+          if (outcome === "exit") return;
+          break;
+        }
+        case "skills": {
+          const outcome = await runSkillsMenu(prompter, region);
           if (outcome === "exit") return;
           break;
         }
