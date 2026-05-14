@@ -9,14 +9,14 @@ import { discoverFromEnvironment } from "../src/cli/env.js";
 const KEYS_TO_CLEAR = [
   "GITHUB_TOKEN",
   "GH_TOKEN",
-  "PR_AGENT_GITHUB_TOKEN",
+  "NYLON_GITHUB_TOKEN",
   "OPENAI_API_KEY",
   "ANTHROPIC_API_KEY",
   "CURSOR_API_KEY",
-  "PR_AGENT_OPENAI_KEY",
-  "PR_AGENT_ANTHROPIC_KEY",
-  "PR_AGENT_CURSOR_KEY",
-  "PR_AGENT_PROVIDER",
+  "NYLON_OPENAI_KEY",
+  "NYLON_ANTHROPIC_KEY",
+  "NYLON_CURSOR_KEY",
+  "NYLON_PROVIDER",
 ];
 
 function withCleanEnv<T>(fn: () => T): T {
@@ -49,13 +49,13 @@ test("discoverFromEnvironment finds GITHUB_TOKEN", () => {
   });
 });
 
-test("PR_AGENT_GITHUB_TOKEN beats GITHUB_TOKEN", () => {
+test("NYLON_GITHUB_TOKEN beats GITHUB_TOKEN", () => {
   withCleanEnv(() => {
     process.env["GITHUB_TOKEN"] = "fallback";
-    process.env["PR_AGENT_GITHUB_TOKEN"] = "preferred";
+    process.env["NYLON_GITHUB_TOKEN"] = "preferred";
     const env = discoverFromEnvironment({ dotEnvPath: "/nonexistent/.env" });
     assert.equal(env.githubToken?.value, "preferred");
-    assert.equal(env.githubToken?.source, "PR_AGENT_GITHUB_TOKEN");
+    assert.equal(env.githubToken?.source, "NYLON_GITHUB_TOKEN");
   });
 });
 
@@ -81,9 +81,9 @@ test("multiple provider keys are all discovered", () => {
   });
 });
 
-test("PR_AGENT_PROVIDER is captured", () => {
+test("NYLON_PROVIDER is captured", () => {
   withCleanEnv(() => {
-    process.env["PR_AGENT_PROVIDER"] = "anthropic";
+    process.env["NYLON_PROVIDER"] = "anthropic";
     const env = discoverFromEnvironment({ dotEnvPath: "/nonexistent/.env" });
     assert.equal(env.preferredProvider?.value, "anthropic");
   });
@@ -101,7 +101,7 @@ test("blank/whitespace env values are ignored", () => {
 
 test(".env file in cwd is loaded", () => {
   withCleanEnv(() => {
-    const dir = mkdtempSync(join(tmpdir(), "pr-agent-env-"));
+    const dir = mkdtempSync(join(tmpdir(), "nylon-env-"));
     try {
       const dotEnv = join(dir, ".env");
       writeFileSync(dotEnv, "GITHUB_TOKEN=from-dotenv\nOPENAI_API_KEY=sk-from-dotenv\n", "utf8");
@@ -119,7 +119,7 @@ test(".env file in cwd is loaded", () => {
 test("existing env vars take precedence over .env values", () => {
   withCleanEnv(() => {
     process.env["GITHUB_TOKEN"] = "from-shell";
-    const dir = mkdtempSync(join(tmpdir(), "pr-agent-env-"));
+    const dir = mkdtempSync(join(tmpdir(), "nylon-env-"));
     try {
       const dotEnv = join(dir, ".env");
       writeFileSync(dotEnv, "GITHUB_TOKEN=from-dotenv\n", "utf8");
