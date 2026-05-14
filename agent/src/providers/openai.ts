@@ -6,6 +6,7 @@ import type {
   ProviderRunContext,
   ReviewInput,
   ReviewOutput,
+  RunPromptArgs,
 } from "./types.js";
 import { buildUserPrompt, loadSystemPrompt } from "./prompts/user.js";
 import { extractReviewJson } from "./json.js";
@@ -23,14 +24,7 @@ export class OpenAiProvider implements AiProvider {
   ];
 
   async review(input: ReviewInput, ctx: ProviderRunContext): Promise<ReviewOutput> {
-    if (!ctx.apiKey) {
-      throw new AgentError(
-        "PROVIDER_MISSING_KEY",
-        "providers.openai.api_key is not set. Run `nylon init` and add an OpenAI API key.",
-      );
-    }
-    const client = new OpenAI({ apiKey: ctx.apiKey, baseURL: ctx.baseUrl });
-
+    const client = this.client(ctx);
     const system = loadSystemPrompt(ctx.skills);
     const user = buildUserPrompt(input.pr);
 
@@ -40,13 +34,19 @@ export class OpenAiProvider implements AiProvider {
     let lastErrorPreview: string | undefined;
     while (attempt < 2) {
       attempt++;
-      const text = await this.stream(client, ctx, system, attempt === 2 ? this.retryUser(user, lastErrorPreview) : user);
+      const text = await this.stream(
+        client,
+        ctx,
+        system,
+        attempt === 2 ? retryUser(user, lastErrorPreview) : user,
+        true,
+      );
       try {
         return extractReviewJson(text);
       } catch (err: unknown) {
         if (err instanceof AgentError && err.code.startsWith("MODEL_") && attempt < 2) {
           lastErrorPreview = err.message;
-          ctx.onLog("warn", `OpenAI output rejected (${err.code}); retrying with stricter instructions.`);
+          ctx.onLog("warn", `OpenAI output rejected (${err.code}); retrying.`);
           continue;
         }
         throw err;
@@ -55,28 +55,44 @@ export class OpenAiProvider implements AiProvider {
     throw new AgentError("PROVIDER_GAVE_UP", "OpenAI did not return a valid review after retries.");
   }
 
+  async runPrompt(args: RunPromptArgs, ctx: ProviderRunContext): Promise<string> {
+    const client = this.client(ctx);
+    const label = args.stageLabel ? `${args.stageLabel}: ` : "";
+    ctx.onProgress(`${label}requesting`, { in: estimateTokens(args.system + args.user) });
+    return await this.stream(client, ctx, args.system, args.user, true);
+  }
+
+  private client(ctx: ProviderRunContext): OpenAI {
+    if (!ctx.apiKey) {
+      throw new AgentError(
+        "PROVIDER_MISSING_KEY",
+        "providers.openai.api_key is not set. Run `nylon init` and add an OpenAI API key.",
+      );
+    }
+    return new OpenAI({ apiKey: ctx.apiKey, baseURL: ctx.baseUrl });
+  }
+
   private async stream(
     client: OpenAI,
     ctx: ProviderRunContext,
     system: string,
     user: string,
+    expectJson: boolean,
   ): Promise<string> {
     let collected = "";
     let tokensOut = 0;
     const tokensIn = estimateTokens(system + user);
-
     try {
       const stream = await client.chat.completions.create({
         model: ctx.model,
         stream: true,
         max_completion_tokens: MAX_TOKENS,
-        response_format: { type: "json_object" },
+        ...(expectJson ? { response_format: { type: "json_object" } } : {}),
         messages: [
           { role: "system", content: system },
           { role: "user", content: user },
         ],
       });
-
       for await (const chunk of stream) {
         const delta = chunk.choices[0]?.delta?.content ?? "";
         if (delta) {
@@ -85,7 +101,6 @@ export class OpenAiProvider implements AiProvider {
           ctx.onProgress("streaming", { in: tokensIn, out: tokensOut });
         }
       }
-
       ctx.onProgress("completed", { in: tokensIn, out: tokensOut });
       return collected;
     } catch (err: unknown) {
@@ -95,17 +110,17 @@ export class OpenAiProvider implements AiProvider {
       );
     }
   }
+}
 
-  private retryUser(user: string, error?: string): string {
-    return [
-      "Your previous response did not match the required JSON schema:",
-      error ?? "(no details)",
-      "",
-      "Try again. Return ONLY the JSON object, with no prose or code fences.",
-      "",
-      user,
-    ].join("\n");
-  }
+function retryUser(user: string, error?: string): string {
+  return [
+    "Your previous response did not match the required JSON schema:",
+    error ?? "(no details)",
+    "",
+    "Try again. Return ONLY the JSON object, with no prose or code fences.",
+    "",
+    user,
+  ].join("\n");
 }
 
 function estimateTokens(text: string): number {

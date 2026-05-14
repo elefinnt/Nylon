@@ -22,7 +22,27 @@ const reviewSchema = z.object({
   skills: z.array(z.string()).default([]),
   request_changes_on_issue: z.boolean().default(false),
   labels: z.boolean().default(false),
-})
+});
+
+// The SOW → ClickUp pipeline always runs a fixed five-agent sequence
+// (intelligence → architect → planner → ticket-generator → quality), so
+// `extract.skills` is no longer user-configurable. We still accept and
+// ignore the field for backward compatibility with older configs.
+const extractSchema = z.object({
+  skills: z.array(z.string()).optional(),
+  include: z.array(z.string()).default(["md", "pdf", "docx", "txt"]),
+  pdf_strategy: z.enum(["auto", "text", "vision"]).default("auto"),
+  max_chars_per_doc: z.number().int().positive().default(80_000),
+});
+
+const clickupSchema = z.object({
+  token: z.string().min(1),
+  default_list_id: z.string().optional(),
+});
+
+const integrationsSchema = z.object({
+  clickup: clickupSchema.optional(),
+});
 
 const githubSchema = z.object({
   token: z.string().min(1),
@@ -32,11 +52,15 @@ export const configSchema = z.object({
   github: githubSchema,
   providers: z.record(providerEntrySchema).default({}),
   defaults: defaultsSchema.default({ post_review: true }),
-  review: reviewSchema.default({ skills: []})
+  review: reviewSchema.default({ skills: [] }),
+  extract: extractSchema.default({}),
+  integrations: integrationsSchema.default({}),
 });
 
 export type ProviderEntry = z.infer<typeof providerEntrySchema>;
 export type Defaults = z.infer<typeof defaultsSchema>;
+export type ExtractConfig = z.infer<typeof extractSchema>;
+export type ClickUpConfig = z.infer<typeof clickupSchema>;
 export type Config = z.infer<typeof configSchema> & { sourcePath: string };
 
 export function defaultConfigPath(): string {
@@ -123,6 +147,32 @@ post_review = true
 # Auto-apply GitHub labels (high-risk, needs-fixes, follow-up-needed) to the PR.
 # Labels must already exist on the repository.
 # labels = false
+
+# ── Task exporter ───────────────────────────────────────────────────────────
+
+# ClickUp personal API token. Mint one at: ClickUp → Settings → Apps.
+# Token starts with pk_
+# [integrations.clickup]
+# token = "pk_replace_me"
+# default_list_id = ""   # optional: skip the list picker every run
+
+[extract]
+# Task extraction runs a fixed five-agent pipeline:
+#   1. SOW Intelligence Extractor   — reads & classifies the document
+#   2. Solution Architect           — groups requirements into modules
+#   3. Delivery Planner             — organises into phases & epics
+#   4. Ticket Generator             — writes ClickUp-ready parent tasks + subtasks
+#   5. Quality & Deduplication      — merges duplicates, caps at 15–40 parents
+#
+# The pipeline is intentionally not user-configurable: every stage
+# depends on the previous one's structured output.
+
+# File types the reader will process.
+include = ["md", "pdf", "docx", "txt"]
+
+# PDF reading strategy: "auto" tries text first and warns if the page is image-only.
+# Set to "text" to always use text extraction only.
+pdf_strategy = "auto"
 `;
 
 export async function writeTemplateConfig(path?: string): Promise<string> {
