@@ -23,12 +23,10 @@ const TOPICS: Record<string, string> = {
     `  Lists the providers and models the agent knows about.\n`,
 
   menu:
-    `${paint.bold("nylon menu")}\n\n` +
-    `  Same as running ${paint.bold("nylon")} with no arguments in an\n` +
-    `  interactive terminal.\n\n` +
-    `  Opens an interactive main menu with two sections:\n` +
-    `    - ${paint.bold("PR agent")}       AI code reviews on GitHub pull requests.\n` +
-    `    - ${paint.bold("Task exporter")}  Sync work items with Monday, Jira, ClickUp.\n\n` +
+    `${paint.bold("nylon")}\n\n` +
+    `  With no arguments, in an interactive terminal, opens the main menu.\n\n` +
+    `  Sections include ${paint.bold("PR agent")}, ${paint.bold("Task exporter")}\n` +
+    `  (ClickUp when configured), ${paint.bold("Skills")}, and more.\n\n` +
     `  Navigate with arrow keys (or number shortcuts), confirm with Enter,\n` +
     `  and exit with Ctrl+C. Requires an interactive terminal.\n`,
 
@@ -80,7 +78,6 @@ function renderRootHelp(): string {
     "",
     `${paint.bold("Usage")}`,
     `  nylon                            ${paint.dim("Open the interactive menu (TTY only)")}`,
-    `  nylon menu                       ${paint.dim("Same as bare nylon")}`,
     `  nylon cat                        ${paint.dim("ASCII cat animation until you quit")}`,
     `  nylon init                       ${paint.dim("Set up GitHub token + provider key (interactive)")}`,
     `  nylon providers                  ${paint.dim("List providers and models")}`,
