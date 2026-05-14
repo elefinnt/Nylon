@@ -8,7 +8,7 @@ import { loadConfig, writeTemplateConfig } from "../src/config.js";
 import { AgentError } from "../src/util/errors.js";
 
 async function inTempDir<T>(fn: (dir: string) => T | Promise<T>): Promise<T> {
-  const dir = mkdtempSync(join(tmpdir(), "pr-agent-cfg-"));
+  const dir = mkdtempSync(join(tmpdir(), "nylon-cfg-"));
   try {
     return await fn(dir);
   } finally {
@@ -63,13 +63,13 @@ test("missing token gives a clear error", async () => {
   });
 });
 
-test("missing file points the user at `pr-review init`", async () => {
+test("missing file points the user at `nylon init`", async () => {
   await inTempDir((dir) => {
     const target = join(dir, "nope.toml");
     assert.throws(() => loadConfig(target), (err: unknown) => {
       assert.ok(err instanceof AgentError);
       assert.equal((err as AgentError).code, "CONFIG_MISSING");
-      assert.match((err as AgentError).message, /pr-review init/);
+      assert.match((err as AgentError).message, /nylon init/);
       return true;
     });
   });
