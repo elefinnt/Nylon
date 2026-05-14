@@ -52,7 +52,7 @@ async function runWizard(prompter: Prompter | undefined, opts: WizardOptions): P
       (result.modelId ? `   Model: ${paint.bold(result.modelId)}` : "") +
       "\n\n" +
       paint.dim("  Try it: ") +
-      paint.bold("pr-review review <pr-url> --dry") +
+      paint.bold("nylon review <pr-url> --dry") +
       "\n",
   );
   return 0;
