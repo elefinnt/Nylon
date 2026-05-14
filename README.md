@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <em>A CLI swiss-army knife &mdash; AI pull-request reviews on GitHub, with task-tracker sync on the way.</em>
+  <em>A CLI Tool &mdash; AI pull-request reviews on GitHub, with task-tracker sync on the way.</em>
 </p>
 
 <p align="center">

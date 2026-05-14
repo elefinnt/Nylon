@@ -16,7 +16,7 @@ type MainChoice = "pr-agent" | "task-exporter" | "skills" | "exit";
  * place rather than appending another menu underneath it.
  */
 export async function runMainMenu(prompter: Prompter): Promise<void> {
-  await renderBanner("Your CLI swiss-army knife: PR reviews, task tracker sync, and more.");
+  await renderBanner("Your CLI Tool: PR reviews, task tracker sync, and more.");
 
   const region = new LiveRegion();
   try {
