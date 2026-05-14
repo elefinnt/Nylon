@@ -26,7 +26,7 @@ const FINAL = (s: string): string => paint.bold(paint.cyan(s));
  *   3. Settle on a clean bold-cyan palette and print the subtitle.
  *
  * Every step is gated by isAnimationEnabled(); when animations are
- * off (CI, NO_COLOR, non-TTY, PR_AGENT_NO_ANIMATION) we just print
+ * off (CI, NO_COLOR, non-TTY, NYLON_NO_ANIMATION) we just print
  * the final coloured banner once.
  */
 export async function renderBanner(subtitle?: string): Promise<void> {
