@@ -22,6 +22,14 @@ const TOPICS: Record<string, string> = {
     `${paint.bold("pr-review providers")}\n\n` +
     `  Lists the providers and models the agent knows about.\n`,
 
+  menu:
+    `${paint.bold("pr-review menu")}\n\n` +
+    `  Opens an interactive main menu with two sections:\n` +
+    `    - ${paint.bold("PR agent")}       AI code reviews on GitHub pull requests.\n` +
+    `    - ${paint.bold("Task exporter")}  Sync work items with Monday, Jira, ClickUp.\n\n` +
+    `  Navigate with arrow keys (or number shortcuts), confirm with Enter,\n` +
+    `  and exit with Ctrl+C. Requires an interactive terminal.\n`,
+
   review:
     `${paint.bold("pr-review review <pr-url>")} (alias: ${paint.bold("pr-review <pr-url>")})\n\n` +
     `  Runs an AI code review against a GitHub pull request. By default\n` +
@@ -53,6 +61,7 @@ function renderRootHelp(): string {
     `${paint.bold("pr-review")} - post AI code reviews onto GitHub pull requests`,
     "",
     `${paint.bold("Usage")}`,
+    `  pr-review menu                       ${paint.dim("Open the interactive main menu")}`,
     `  pr-review init                       ${paint.dim("Set up GitHub token + provider key (interactive)")}`,
     `  pr-review providers                  ${paint.dim("List providers and models")}`,
     `  pr-review review <pr-url> [flags]    ${paint.dim("Run a review")}`,
