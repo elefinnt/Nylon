@@ -149,7 +149,7 @@ test("extractSynthesis throws on missing JSON", () => {
 // ── config integration ────────────────────────────────────────────
 
 test("config loads review.skills from toml", () => {
-  const dir = mkdtempSync(join(tmpdir(), "pr-agent-skills-cfg-"));
+  const dir = mkdtempSync(join(tmpdir(), "nylon-skills-cfg-"));
   try {
     const target = join(dir, "config.toml");
     writeFileSync(target, `
@@ -167,7 +167,7 @@ skills = ["intent-analysis", "inline-reviewer"]
 });
 
 test("config defaults to empty skills when review section is absent", () => {
-  const dir = mkdtempSync(join(tmpdir(), "pr-agent-skills-cfg-"));
+  const dir = mkdtempSync(join(tmpdir(), "nylon-skills-cfg-"));
   try {
     const target = join(dir, "config.toml");
     writeFileSync(target, `
