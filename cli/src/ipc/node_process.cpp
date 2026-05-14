@@ -15,7 +15,7 @@
 #include <reproc++/reproc.hpp>
 #include <reproc++/run.hpp>
 
-#if defined(PR_REVIEW_PLATFORM_WINDOWS)
+#if defined(NYLON_PLATFORM_WINDOWS)
 #include <windows.h>
 #endif
 
@@ -28,7 +28,7 @@ namespace {
 
 std::filesystem::path executable_directory() {
     namespace fs = std::filesystem;
-#if defined(PR_REVIEW_PLATFORM_WINDOWS)
+#if defined(NYLON_PLATFORM_WINDOWS)
     char buffer[4096];
     DWORD len = GetModuleFileNameA(nullptr, buffer, sizeof(buffer));
     if (len == 0) return fs::current_path();
@@ -43,7 +43,7 @@ std::filesystem::path executable_directory() {
 std::string resolve_agent_path() {
     namespace fs = std::filesystem;
 
-    if (const char* override_path = std::getenv("PR_AGENT_AGENT_PATH")) {
+    if (const char* override_path = std::getenv("NYLON_AGENT_PATH")) {
         return override_path;
     }
 
@@ -56,11 +56,11 @@ std::string resolve_agent_path() {
         if (fs::exists(candidate)) return fs::weakly_canonical(candidate).string();
     }
     throw std::runtime_error("Could not find agent/dist/index.js next to the binary. "
-                             "Set PR_AGENT_AGENT_PATH to its absolute path.");
+                             "Set NYLON_AGENT_PATH to its absolute path.");
 }
 
 std::string resolve_node_binary() {
-    if (const char* override_path = std::getenv("PR_AGENT_NODE")) {
+    if (const char* override_path = std::getenv("NYLON_NODE")) {
         return override_path;
     }
     return "node";
