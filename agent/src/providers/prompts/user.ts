@@ -1,3 +1,4 @@
+import type { Skill } from "../../skills/types.js";
 import type { PullRequestSnapshot } from "../types.js";
 
 const SYSTEM_PROMPT = `You are an experienced senior software engineer reviewing a GitHub pull request. Your job is to produce a focused, actionable review that helps the author ship a better change quickly.
@@ -30,8 +31,13 @@ interface Review {
 }
 `;
 
-export function loadSystemPrompt(): string {
-  return SYSTEM_PROMPT;
+export function loadSystemPrompt(skills: readonly Skill[] = []): string {
+  if (skills.length === 0) return SYSTEM_PROMPT;
+  const blocks = skills
+    .filter(s => s.pipelineStage === undefined)   // pipeline skills inject their own prompts
+    .map(s => s.toSystemPromptBlock())
+    .join("\n\n");
+  return blocks.length > 0 ? `${SYSTEM_PROMPT}\n\n---\n\n${blocks}` : SYSTEM_PROMPT;
 }
 
 export interface UserPromptOptions {
