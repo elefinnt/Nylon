@@ -110,10 +110,31 @@ export interface ReviewInput {
   readonly pr: PullRequestSnapshot;
 }
 
+// ── Generic prompt primitive ───────────────────────────────────────────────
+
+export interface RunPromptArgs {
+  /** System prompt — model instructions / role. */
+  readonly system: string;
+  /** User prompt — actual content / task. */
+  readonly user: string;
+  /** Optional label for progress UI (e.g. "intelligence", "tickets"). */
+  readonly stageLabel?: string;
+}
+
+// ── Provider interface ─────────────────────────────────────────────────────
+
 export interface AiProvider {
   readonly id: string;
   readonly displayName: string;
   readonly models: readonly ModelDescriptor[];
 
   review(input: ReviewInput, ctx: ProviderRunContext): Promise<ReviewOutput>;
+
+  /**
+   * Low-level primitive: send a single system+user prompt to the model
+   * and return its raw text response. Used by multi-pass pipelines
+   * (SOW → ClickUp project, etc.) that orchestrate their own JSON
+   * parsing and retry logic.
+   */
+  runPrompt(args: RunPromptArgs, ctx: ProviderRunContext): Promise<string>;
 }
