@@ -4,7 +4,6 @@
  * Surface:
  *   nylon init [--force]
  *   nylon providers
- *   nylon menu
  *   nylon cat
  *   nylon review <pr-url> [--dry|-n] [--provider|-p <id>] [--model|-m <id>]
  *                          [--verbose|-v]
