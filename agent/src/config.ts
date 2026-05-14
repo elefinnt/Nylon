@@ -18,6 +18,12 @@ const defaultsSchema = z.object({
   post_review: z.boolean().default(true),
 });
 
+const reviewSchema = z.object({
+  skills: z.array(z.string()).default([]),
+  request_changes_on_issue: z.boolean().default(false),
+  labels: z.boolean().default(false),
+})
+
 const githubSchema = z.object({
   token: z.string().min(1),
 });
@@ -26,6 +32,7 @@ export const configSchema = z.object({
   github: githubSchema,
   providers: z.record(providerEntrySchema).default({}),
   defaults: defaultsSchema.default({ post_review: true }),
+  review: reviewSchema.default({ skills: []})
 });
 
 export type ProviderEntry = z.infer<typeof providerEntrySchema>;
@@ -104,6 +111,18 @@ default_model = "gpt-5"
 # provider = "cursor"
 # model = "composer-2"
 post_review = true
+
+[review]
+# Enable skills to improve review quality. Available: intent-analysis, inline-reviewer, review-synthesis
+# Activating all three enables the full 3-pass pipeline on the Cursor provider.
+# skills = ["intent-analysis", "inline-reviewer", "review-synthesis"]
+
+# Use REQUEST_CHANGES (blocks merge) instead of COMMENT when issues are found.
+# request_changes_on_issue = false
+
+# Auto-apply GitHub labels (high-risk, needs-fixes, follow-up-needed) to the PR.
+# Labels must already exist on the repository.
+# labels = false
 `;
 
 export async function writeTemplateConfig(path?: string): Promise<string> {
