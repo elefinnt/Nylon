@@ -26,7 +26,7 @@ export class AnthropicProvider implements AiProvider {
     if (!ctx.apiKey) {
       throw new AgentError(
         "PROVIDER_MISSING_KEY",
-        "providers.anthropic.api_key is not set. Run `pr-review init` and add an Anthropic API key.",
+        "providers.anthropic.api_key is not set. Run `nylon init` and add an Anthropic API key.",
       );
     }
     const client = new Anthropic({ apiKey: ctx.apiKey, baseURL: ctx.baseUrl });
