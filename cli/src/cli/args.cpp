@@ -8,8 +8,8 @@ namespace pr::cli {
 Args parse_args(int argc, char** argv) {
     Args args;
 
-    CLI::App app{"pr-review - post AI code reviews onto GitHub pull requests"};
-    app.set_version_flag("--version,-V", std::string{PR_REVIEW_VERSION});
+    CLI::App app{"nylon - post AI code reviews onto GitHub pull requests"};
+    app.set_version_flag("--version,-V", std::string{NYLON_VERSION});
     app.require_subcommand(0, 1);
 
     app.add_flag("-v,--verbose", args.verbose, "Show debug logs from the agent on stderr");
@@ -25,7 +25,7 @@ Args parse_args(int argc, char** argv) {
     app.add_flag("--dry-run", args.dry_run,
                  "Run the review without posting it back to GitHub");
 
-    auto* init = app.add_subcommand("init", "Create or open ~/.pr-agent/config.toml");
+    auto* init = app.add_subcommand("init", "Create or open ~/.nylon/config.toml");
     auto* providers = app.add_subcommand("providers",
                                          "List providers and models known to the agent");
 
