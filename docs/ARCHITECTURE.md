@@ -5,12 +5,12 @@
 ```mermaid
 flowchart LR
     User([User terminal])
-    CLI["pr-review.exe<br/>C++ binary"]
+    CLI["nylon.exe<br/>C++ binary"]
     Agent["agent<br/>Node + TS subprocess"]
     GH["GitHub REST API"]
     Prov["AI provider<br/>Anthropic / OpenAI"]
 
-    User -- "pr-review url" --> CLI
+    User -- "nylon url" --> CLI
     CLI -- "spawn + stdin NDJSON" --> Agent
     Agent -- "stdout NDJSON" --> CLI
     CLI -- "progress" --> User
@@ -22,7 +22,7 @@ flowchart LR
 The C++ binary is responsible for:
 
 - Argument parsing.
-- Loading `~/.pr-agent/config.toml` for early validation.
+- Loading `~/.nylon/config.toml` for early validation.
 - The interactive provider / model picker (FTXUI).
 - Spawning the agent subprocess and rendering its progress.
 
@@ -101,15 +101,15 @@ cmake --preset windows-x64
 cmake --build --preset windows-x64 --config Release
 ```
 
-The output binary lands in `cli/build/windows-x64/Release/pr-review.exe`.
+The output binary lands in `cli/build/windows-x64/Release/nylon.exe`.
 
 ### Putting it together
 
 For local development:
 
 ```powershell
-$env:PR_AGENT_AGENT_PATH = "C:\path\to\pr-agent\agent\dist\index.js"
-.\cli\build\windows-x64\Release\pr-review.exe --version
+$env:NYLON_AGENT_PATH = "C:\path\to\nylon\agent\dist\index.js"
+.\cli\build\windows-x64\Release\nylon.exe --version
 ```
 
 When packaged in a release, the agent ships next to the binary and the CLI
