@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
             case pr::cli::Command::Providers:
                 return run_providers(args, out);
             case pr::cli::Command::Version:
-                std::cout << "pr-review " << PR_REVIEW_VERSION << '\n';
+                std::cout << "nylon " << NYLON_VERSION << '\n';
                 return 0;
             case pr::cli::Command::None:
                 return 0;
@@ -41,10 +41,10 @@ int main(int argc, char** argv) {
         // CLI11 has already printed help. Exit with its requested code.
         return e.exit_code();
     } catch (const std::exception& e) {
-        std::cerr << "pr-review: error: " << e.what() << '\n';
+        std::cerr << "nylon: error: " << e.what() << '\n';
         return 1;
     } catch (...) {
-        std::cerr << "pr-review: unknown fatal error\n";
+        std::cerr << "nylon: unknown fatal error\n";
         return 1;
     }
 }
