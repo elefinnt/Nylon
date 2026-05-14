@@ -40,14 +40,14 @@ export type Defaults = z.infer<typeof defaultsSchema>;
 export type Config = z.infer<typeof configSchema> & { sourcePath: string };
 
 export function defaultConfigPath(): string {
-  return join(homedir(), ".pr-agent", "config.toml");
+  return join(homedir(), ".nylon", "config.toml");
 }
 
 export function loadConfig(path: string = defaultConfigPath()): Config {
   if (!existsSync(path)) {
     throw new AgentError(
       "CONFIG_MISSING",
-      `Config file not found at ${path}. Run \`pr-review init\` to create it.`,
+      `Config file not found at ${path}. Run \`nylon init\` to create it.`,
     );
   }
   let raw: string;
