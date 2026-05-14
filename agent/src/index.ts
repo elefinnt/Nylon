@@ -1,5 +1,6 @@
 import { argv as processArgv, stdin, stdout } from "node:process";
 
+import { runMenuCommand } from "./cli/commands/menu.js";
 import { runCli } from "./cli/run.js";
 import { logger } from "./util/log.js";
 import { dispatch } from "./pipeline/dispatch.js";
@@ -15,11 +16,17 @@ async function main(): Promise<void> {
     if (outcome.kind === "exit") {
       process.exit(outcome.code);
     }
+    return;
   }
 
-  // IPC mode: zero argv means we're either being driven by the C++ binary
-  // over NDJSON or being piped a single JSON request from a shell. Keep the
-  // existing behaviour intact.
+  // No argv: interactive users expect bare `nylon` to open the same UI as
+  // `nylon menu`. When stdin is not a TTY we stay on NDJSON stdin IPC so the
+  // native shim and pipe-driven callers keep working unchanged.
+  if (stdin.isTTY) {
+    const code = await runMenuCommand();
+    process.exit(code);
+  }
+
   await runIpcMode();
 }
 

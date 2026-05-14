@@ -158,3 +158,45 @@ test("unknown flag inside review is rejected", () => {
   const out = parseArgv(["https://github.com/a/b/pull/1", "--what"]);
   assert.equal(out.kind, "error");
 });
+
+test("extract parses path + dry + provider/model overrides", () => {
+  const out = parseArgv([
+    "extract",
+    "./scope/spec.md",
+    "--dry",
+    "-p",
+    "openai",
+    "-m",
+    "gpt-5",
+  ]);
+  assert.equal(out.kind, "command");
+  if (out.kind !== "command" || out.command.kind !== "extract") return;
+  assert.equal(out.command.filePath, "./scope/spec.md");
+  assert.equal(out.command.dry, true);
+  assert.equal(out.command.provider, "openai");
+  assert.equal(out.command.model, "gpt-5");
+});
+
+test("extract --help routes to its help topic", () => {
+  const out = parseArgv(["extract", "--help"]);
+  assert.equal(out.kind, "command");
+  if (out.kind !== "command") return;
+  assert.deepEqual(out.command, { kind: "help", topic: "extract" });
+});
+
+test("missing path after `extract` is an error", () => {
+  const out = parseArgv(["extract"]);
+  assert.equal(out.kind, "error");
+});
+
+test("extract rejects a URL-shaped positional", () => {
+  const out = parseArgv(["extract", "https://example.com/doc.pdf"]);
+  assert.equal(out.kind, "error");
+  if (out.kind !== "error") return;
+  assert.match(out.message, /local document path/);
+});
+
+test("unknown flag inside extract is rejected", () => {
+  const out = parseArgv(["extract", "./x.md", "--what"]);
+  assert.equal(out.kind, "error");
+});

@@ -204,15 +204,16 @@ nylon menu
 If you do not want to remember every flag, run:
 
 ```powershell
-nylon menu
+nylon
 ```
+
+(`nylon menu` does the same thing.)
 
 That opens a top-level menu with the animated NYLON banner and three
 sections:
 
-- **PR agent** &mdash; jumping-off point for reviews, `init`, and listing
-  providers. The actions point at the corresponding `nylon`
-  subcommands for now while the UI is being filled in.
+- **PR agent** &mdash; **Review a pull request** asks for a PR URL and runs
+  the same pipeline as `nylon review <url>`.
 - **Task exporter** &mdash; **ClickUp** export is live when
   `[integrations.clickup]` is present in `config.toml` with a real token
   (including when `nylon init` writes that block after reading
@@ -485,7 +486,8 @@ collaborators can tell it apart from human review comments at a glance.
 ## Useful commands
 
 ```powershell
-nylon menu                       # interactive: NYLON main menu
+nylon                            # interactive: NYLON main menu (same as menu)
+nylon menu                       # same as bare nylon
 nylon init                       # interactive: GitHub token + provider + key
 nylon providers                  # list providers and models known to the agent
 nylon <pr-url>                   # default flow: review + post

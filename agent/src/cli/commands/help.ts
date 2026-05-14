@@ -24,6 +24,8 @@ const TOPICS: Record<string, string> = {
 
   menu:
     `${paint.bold("nylon menu")}\n\n` +
+    `  Same as running ${paint.bold("nylon")} with no arguments in an\n` +
+    `  interactive terminal.\n\n` +
     `  Opens an interactive main menu with two sections:\n` +
     `    - ${paint.bold("PR agent")}       AI code reviews on GitHub pull requests.\n` +
     `    - ${paint.bold("Task exporter")}  Sync work items with Monday, Jira, ClickUp.\n\n` +
@@ -45,6 +47,17 @@ const TOPICS: Record<string, string> = {
     `    -p, --provider <id>    Override the configured provider.\n` +
     `    -m, --model <id>       Override the configured model.\n` +
     `    -v, --verbose          Show debug logs from the agent.\n`,
+
+  extract:
+    `${paint.bold("nylon extract <file-path>")}\n\n` +
+    `  Reads a local document (.md, .pdf, .docx) and runs the same five-agent\n` +
+    `  SOW → ticket pipeline as Task exporter → ClickUp. With a ClickUp token\n` +
+    `  configured, you can confirm and push tasks interactively. Use --dry to\n` +
+    `  run the pipeline and preview the plan without pushing.\n\n` +
+    `  Options:\n` +
+    `    -n, --dry              Extract only; do not push to ClickUp.\n` +
+    `    -p, --provider <id>    Override the configured provider.\n` +
+    `    -m, --model <id>       Override the configured model.\n`,
 };
 
 export function runHelpCommand(topic?: string): number {
@@ -66,11 +79,13 @@ function renderRootHelp(): string {
     `${paint.bold("nylon")} - post AI code reviews onto GitHub pull requests`,
     "",
     `${paint.bold("Usage")}`,
-    `  nylon menu                       ${paint.dim("Open the interactive main menu")}`,
+    `  nylon                            ${paint.dim("Open the interactive menu (TTY only)")}`,
+    `  nylon menu                       ${paint.dim("Same as bare nylon")}`,
     `  nylon cat                        ${paint.dim("ASCII cat animation until you quit")}`,
     `  nylon init                       ${paint.dim("Set up GitHub token + provider key (interactive)")}`,
     `  nylon providers                  ${paint.dim("List providers and models")}`,
     `  nylon review <pr-url> [flags]    ${paint.dim("Run a review")}`,
+    `  nylon extract <path> [flags]      ${paint.dim("Extract document → ClickUp tasks")}`,
     `  nylon <pr-url> [flags]           ${paint.dim("Same as `review <pr-url>`")}`,
     "",
     `${paint.bold("Common flags")}`,
@@ -85,6 +100,7 @@ function renderRootHelp(): string {
     `  nylon init`,
     `  nylon https://github.com/acme/widgets/pull/42 --dry`,
     `  nylon review https://github.com/acme/widgets/pull/42 -p openai`,
+    `  nylon extract ./scope/spec.md --dry`,
     "",
   ].join("\n") + "\n";
 }

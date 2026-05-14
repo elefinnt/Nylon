@@ -5,6 +5,7 @@ import type { CliCommand } from "./argv.js";
 import { runHelpCommand, runVersionCommand } from "./commands/help.js";
 import { runInitCommand } from "./commands/init.js";
 import { runCatCommand } from "./commands/cat.js";
+import { runExtractCommand } from "./commands/extract.js";
 import { runMenuCommand } from "./commands/menu.js";
 import { runProvidersCommand } from "./commands/providers.js";
 import { runReviewCommand } from "./commands/review.js";
@@ -54,6 +55,15 @@ async function dispatch(command: CliCommand): Promise<number> {
       if (command.provider !== undefined) input.provider = command.provider;
       if (command.model !== undefined) input.model = command.model;
       return runReviewCommand(input);
+    }
+    case "extract": {
+      const input = {
+        filePath: command.filePath,
+        dry: command.dry,
+      } as Parameters<typeof runExtractCommand>[0];
+      if (command.provider !== undefined) input.provider = command.provider;
+      if (command.model !== undefined) input.model = command.model;
+      return runExtractCommand(input);
     }
   }
 }
