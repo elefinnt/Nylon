@@ -22,12 +22,12 @@ cli/vcpkg_installed/
 Thumbs.db
 desktop.ini
 
-# Local config / secrets (config lives in ~/.pr-agent/, never in repo)
+# Local config / secrets (config lives in ~/.nylon/, never in repo)
 .env
 .env.*
 *.local
 config.toml
-.pr-agent/
+.nylon/
 
 # Installer artefacts
 *.zip
