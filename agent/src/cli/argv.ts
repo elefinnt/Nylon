@@ -8,12 +8,14 @@
  *   nylon cat
  *   nylon review <pr-url> [--dry|-n] [--provider|-p <id>] [--model|-m <id>]
  *                          [--verbose|-v]
+ *   nylon extract <file-path> [--dry|-n] [--provider|-p <id>] [--model|-m <id>]
  *   nylon <pr-url>             (alias for `review <pr-url>`)
  *   nylon --help|-h
  *   nylon --version|-V
  *
- * Anything that doesn't look like an argv command (i.e. argv length 0) falls
- * through to the legacy NDJSON-on-stdin IPC mode that the C++ binary uses.
+ * Argv length 0: from an interactive terminal {@link index.ts} opens the
+ * menu; otherwise control falls through to NDJSON-on-stdin IPC (native shim,
+ * pipes).
  */
 
 export type CliCommand =
@@ -30,6 +32,13 @@ export type CliCommand =
       model?: string;
       dry: boolean;
       verbose: boolean;
+    }
+  | {
+      kind: "extract";
+      filePath: string;
+      provider?: string;
+      model?: string;
+      dry: boolean;
     };
 
 export type ParseOutcome =
@@ -66,6 +75,8 @@ export function parseArgv(argv: readonly string[]): ParseOutcome {
       return parseCat(argv.slice(1));
     case "review":
       return parseReview(argv.slice(1));
+    case "extract":
+      return parseExtract(argv.slice(1));
     default:
       if (looksLikeUrl(first)) {
         return parseReview(argv);
@@ -226,6 +237,83 @@ function parseReview(rest: readonly string[]): ParseOutcome {
   return { kind: "command", command };
 }
 
+function parseExtract(rest: readonly string[]): ParseOutcome {
+  let filePath: string | undefined;
+  let provider: string | undefined;
+  let model: string | undefined;
+  let dry = false;
+
+  for (let i = 0; i < rest.length; i++) {
+    const arg = rest[i];
+    if (arg === undefined) continue;
+
+    if (HELP_FLAGS.has(arg)) {
+      return { kind: "command", command: { kind: "help", topic: "extract" } };
+    }
+    if (arg === "--dry" || arg === "--dry-run" || arg === "-n") {
+      dry = true;
+      continue;
+    }
+    if (arg === "--provider" || arg === "-p") {
+      provider = takeValue(rest, ++i, arg);
+      continue;
+    }
+    if (arg.startsWith("--provider=")) {
+      provider = arg.slice("--provider=".length);
+      continue;
+    }
+    if (arg === "--model" || arg === "-m") {
+      model = takeValue(rest, ++i, arg);
+      continue;
+    }
+    if (arg.startsWith("--model=")) {
+      model = arg.slice("--model=".length);
+      continue;
+    }
+    if (arg.startsWith("-")) {
+      return {
+        kind: "error",
+        message: `Unknown flag: ${arg}`,
+        exitCode: 64,
+      };
+    }
+    if (filePath === undefined) {
+      filePath = arg;
+      continue;
+    }
+    return {
+      kind: "error",
+      message: `Unexpected positional argument: ${arg}`,
+      exitCode: 64,
+    };
+  }
+
+  if (!filePath) {
+    return {
+      kind: "error",
+      message: "Missing document path. Usage: nylon extract <file-path>",
+      exitCode: 64,
+    };
+  }
+  if (looksLikeUrl(filePath)) {
+    return {
+      kind: "error",
+      message:
+        "`extract` expects a local document path (.md, .pdf, .docx), not a URL.",
+      exitCode: 64,
+    };
+  }
+
+  const command: CliCommand = {
+    kind: "extract",
+    filePath,
+    dry,
+  };
+  if (provider !== undefined) command.provider = provider;
+  if (model !== undefined) command.model = model;
+  return { kind: "command", command };
+}
+
 function takeValue(rest: readonly string[], idx: number, flag: string): string {
   const value = rest[idx];
   if (value === undefined || value.startsWith("-")) {
@@ -234,7 +322,7 @@ function takeValue(rest: readonly string[], idx: number, flag: string): string {
   return value;
 }
 
-function looksLikeUrl(value: string): boolean {
+export function looksLikeUrl(value: string): boolean {
   return /^https?:\/\//i.test(value);
 }
 
