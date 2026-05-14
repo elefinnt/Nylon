@@ -31,7 +31,13 @@ export interface ClickUpExportResult {
 export async function runClickUpExport(opts: ClickUpExportOptions): Promise<ClickUpExportResult> {
   const { config, tree, sourcePath, prompter } = opts;
 
-  const confirmed = await confirmTree(tree, prompter);
+  const { totalParents, totalSubtasks } = renderTicketTreePlan(tree);
+  if (totalParents === 0) {
+    stdout.write(`  ${paint.yellow("!")} No tasks were extracted. Nothing to push.\n\n`);
+    return empty();
+  }
+
+  const confirmed = await promptPushConfirmation(totalParents, totalSubtasks, prompter);
   if (!confirmed) {
     stdout.write(`  ${paint.dim("·")} Export cancelled.\n\n`);
     return empty();
@@ -61,9 +67,13 @@ export async function runClickUpExport(opts: ClickUpExportOptions): Promise<Clic
   return { ...result, listUrl };
 }
 
-// ── Confirmation screen ──────────────────────────────────────────────
+// ── Plan view + confirmation ─────────────────────────────────────────
 
-async function confirmTree(tree: TicketTree, prompter: Prompter): Promise<boolean> {
+/** Writes the hierarchical plan to stdout; returns task counts. */
+export function renderTicketTreePlan(tree: TicketTree): {
+  totalParents: number;
+  totalSubtasks: number;
+} {
   stdout.write("\n");
   stdout.write(`${paint.bold("◆ Project plan")}\n\n`);
   stdout.write(`  ${paint.bold(tree.projectName)}\n`);
@@ -106,11 +116,14 @@ async function confirmTree(tree: TicketTree, prompter: Prompter): Promise<boolea
       `${totalSubtasks === 1 ? "" : "s"}\n\n`,
   );
 
-  if (totalParents === 0) {
-    stdout.write(`  ${paint.yellow("!")} No tasks were extracted. Nothing to push.\n\n`);
-    return false;
-  }
+  return { totalParents, totalSubtasks };
+}
 
+async function promptPushConfirmation(
+  totalParents: number,
+  totalSubtasks: number,
+  prompter: Prompter,
+): Promise<boolean> {
   const choice = await prompter.choice<"push" | "cancel">(
     `Push ${totalParents} parent task${totalParents === 1 ? "" : "s"} + ` +
       `${totalSubtasks} subtask${totalSubtasks === 1 ? "" : "s"} to ClickUp?`,
