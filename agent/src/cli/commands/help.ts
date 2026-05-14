@@ -30,6 +30,11 @@ const TOPICS: Record<string, string> = {
     `  Navigate with arrow keys (or number shortcuts), confirm with Enter,\n` +
     `  and exit with Ctrl+C. Requires an interactive terminal.\n`,
 
+  cat:
+    `${paint.bold("nylon cat")}\n\n` +
+    `  Plays a looping ASCII cat animation in your terminal until you press\n` +
+    `  ${paint.bold("q")} or ${paint.bold("Ctrl+C")}. Requires an interactive terminal.\n`,
+
   review:
     `${paint.bold("nylon review <pr-url>")} (alias: ${paint.bold("nylon <pr-url>")})\n\n` +
     `  Runs an AI code review against a GitHub pull request. By default\n` +
@@ -62,6 +67,7 @@ function renderRootHelp(): string {
     "",
     `${paint.bold("Usage")}`,
     `  nylon menu                       ${paint.dim("Open the interactive main menu")}`,
+    `  nylon cat                        ${paint.dim("ASCII cat animation until you quit")}`,
     `  nylon init                       ${paint.dim("Set up GitHub token + provider key (interactive)")}`,
     `  nylon providers                  ${paint.dim("List providers and models")}`,
     `  nylon review <pr-url> [flags]    ${paint.dim("Run a review")}`,
