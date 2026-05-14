@@ -35,6 +35,13 @@ default_model = "gpt-5"
 # provider = "anthropic"
 # model = "claude-opus-4.5"
 post_review = true
+
+[review]
+# Optional. Composable review skills. Activating all three switches the
+# Cursor provider into a 3-pass pipeline (intent -> inline -> synthesis).
+# skills = ["intent-analysis", "inline-reviewer", "review-synthesis"]
+# request_changes_on_issue = false
+# labels = false
 ```
 
 ## Sections
@@ -73,6 +80,25 @@ to the agent (see `pr-review providers ls`).
 | `provider`     | unset   | Skips the provider picker.                                            |
 | `model`        | unset   | Skips the model picker (requires `provider` to also be set).          |
 | `post_review` | `true`  | Set to `false` to print the review to stdout without posting.         |
+
+### `[review]`
+
+| Key                        | Default | Notes                                                                                              |
+| -------------------------- | ------- | -------------------------------------------------------------------------------------------------- |
+| `skills`                   | `[]`    | Skill IDs to activate. Known: `intent-analysis`, `inline-reviewer`, `review-synthesis`.            |
+| `request_changes_on_issue` | `false` | When `true`, post `REQUEST_CHANGES` (blocks merge) on `issue` severity or `high` risk reviews.     |
+| `labels`                   | `false` | When `true`, apply derived labels (`high-risk`, `needs-fixes`, `follow-up-needed`) to the PR.      |
+
+Activating all three skills together switches the Cursor provider into a
+3-pass pipeline: pass 1 writes an intent doc, pass 2 produces inline
+comments, pass 3 synthesises the summary, risk level and follow-ups. On
+Anthropic and OpenAI the skills currently feed into the single-pass
+prompt as system-prompt hints; full pipeline support there is on the
+roadmap.
+
+Unknown skill IDs are dropped with a warning rather than treated as an
+error, so a config that mentions a skill from a newer release still
+loads on an older agent.
 
 ## File permissions
 
