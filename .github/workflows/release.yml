@@ -30,15 +30,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build agent
-        run: pnpm -F @pr-agent/agent build
+        run: pnpm -F @nylon/agent build
 
       - name: Prepare agent production node_modules
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path release-staging\pr-agent\agent | Out-Null
-          Copy-Item -Recurse agent\dist     release-staging\pr-agent\agent\dist
-          Copy-Item        agent\package.json release-staging\pr-agent\agent\package.json
-          Push-Location release-staging\pr-agent\agent
+          New-Item -ItemType Directory -Force -Path release-staging\nylon\agent | Out-Null
+          Copy-Item -Recurse agent\dist     release-staging\nylon\agent\dist
+          Copy-Item        agent\package.json release-staging\nylon\agent\package.json
+          Push-Location release-staging\nylon\agent
           pnpm install --prod --frozen-lockfile=false --ignore-workspace
           Pop-Location
 
@@ -83,19 +83,19 @@ jobs:
       - name: Stage installer payload
         shell: pwsh
         run: |
-          Copy-Item cli\build\windows-x64\pr-review.exe release-staging\pr-agent\pr-review.exe
-          New-Item -ItemType Directory -Force -Path release-staging\pr-agent\installer | Out-Null
-          Copy-Item installer\install.ps1 release-staging\pr-agent\installer\install.ps1
-          Copy-Item README.md   release-staging\pr-agent\README.md
-          Copy-Item LICENSE     release-staging\pr-agent\LICENSE
-          Copy-Item -Recurse docs release-staging\pr-agent\docs
+          Copy-Item cli\build\windows-x64\nylon.exe release-staging\nylon\nylon.exe
+          New-Item -ItemType Directory -Force -Path release-staging\nylon\installer | Out-Null
+          Copy-Item installer\install.ps1 release-staging\nylon\installer\install.ps1
+          Copy-Item README.md   release-staging\nylon\README.md
+          Copy-Item LICENSE     release-staging\nylon\LICENSE
+          Copy-Item -Recurse docs release-staging\nylon\docs
 
       - name: Package zip
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}"
-          $zipName = "pr-agent-$version-windows-x64.zip"
-          Compress-Archive -Path release-staging\pr-agent\* -DestinationPath $zipName -Force
+          $zipName = "nylon-$version-windows-x64.zip"
+          Compress-Archive -Path release-staging\nylon\* -DestinationPath $zipName -Force
           echo "RELEASE_ZIP=$zipName" >> $env:GITHUB_ENV
 
       - name: Draft GitHub Release
