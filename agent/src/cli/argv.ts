@@ -5,6 +5,7 @@
  *   nylon init [--force]
  *   nylon providers
  *   nylon menu
+ *   nylon cat
  *   nylon review <pr-url> [--dry|-n] [--provider|-p <id>] [--model|-m <id>]
  *                          [--verbose|-v]
  *   nylon <pr-url>             (alias for `review <pr-url>`)
@@ -21,6 +22,7 @@ export type CliCommand =
   | { kind: "init"; force: boolean; fromEnv: boolean }
   | { kind: "providers" }
   | { kind: "menu" }
+  | { kind: "cat" }
   | {
       kind: "review";
       url: string;
@@ -60,6 +62,8 @@ export function parseArgv(argv: readonly string[]): ParseOutcome {
       return parseProviders(argv.slice(1));
     case "menu":
       return parseMenu(argv.slice(1));
+    case "cat":
+      return parseCat(argv.slice(1));
     case "review":
       return parseReview(argv.slice(1));
     default:
@@ -124,6 +128,20 @@ function parseMenu(rest: readonly string[]): ParseOutcome {
     };
   }
   return { kind: "command", command: { kind: "menu" } };
+}
+
+function parseCat(rest: readonly string[]): ParseOutcome {
+  for (const arg of rest) {
+    if (HELP_FLAGS.has(arg)) {
+      return { kind: "command", command: { kind: "help", topic: "cat" } };
+    }
+    return {
+      kind: "error",
+      message: `\`cat\` takes no arguments (got ${arg}).`,
+      exitCode: 64,
+    };
+  }
+  return { kind: "command", command: { kind: "cat" } };
 }
 
 function parseReview(rest: readonly string[]): ParseOutcome {
