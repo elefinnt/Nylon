@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/nylon-banner.svg" alt="NYLON" width="780"/>
+  <img src="docs/assets/nylon-banner.svg" alt="NYLON" width="880"/>
 </p>
 
 <p align="center">
