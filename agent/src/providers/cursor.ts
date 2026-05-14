@@ -41,7 +41,7 @@ export class CursorProvider implements AiProvider {
   ];
 
   async review(input: ReviewInput, ctx: ProviderRunContext): Promise<ReviewOutput> {
-    const cwd = mkdtempSync(join(tmpdir(), "pr-agent-cursor-"));
+    const cwd = mkdtempSync(join(tmpdir(), "nylon-cursor-"));
     try {
       if (hasPipelineSkills(ctx.skills)) {
         return await this.runPipeline(input, ctx, cwd);
