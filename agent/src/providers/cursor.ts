@@ -1,7 +1,8 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { hasPipelineSkills }      from "../skills/registry.js";
+
+import { hasPipelineSkills } from "../skills/registry.js";
 import {
   buildIntentPrompt,
   buildInlineReviewPrompt,
@@ -9,7 +10,6 @@ import {
   extractInlineReview,
   extractSynthesis,
 } from "./prompts/pipeline.js";
-
 
 import { Agent, CursorAgentError } from "@cursor/sdk";
 
@@ -19,6 +19,7 @@ import type {
   ProviderRunContext,
   ReviewInput,
   ReviewOutput,
+  RunPromptArgs,
 } from "./types.js";
 import { buildUserPrompt, loadSystemPrompt } from "./prompts/user.js";
 import { extractReviewJson } from "./json.js";
@@ -52,6 +53,18 @@ export class CursorProvider implements AiProvider {
     }
   }
 
+  async runPrompt(args: RunPromptArgs, ctx: ProviderRunContext): Promise<string> {
+    const cwd = mkdtempSync(join(tmpdir(), "nylon-cursor-"));
+    try {
+      const label = args.stageLabel ? `${args.stageLabel}: ` : "";
+      ctx.onProgress(`${label}launching cursor agent`);
+      const prompt = `${CURSOR_PREAMBLE}${args.system}\n\n---\n\n${args.user}`;
+      return await this.runOnce({ ctx, cwd, prompt });
+    } finally {
+      try { rmSync(cwd, { recursive: true, force: true }); } catch { /* best-effort */ }
+    }
+  }
+
   private async runSinglePass(
     input: ReviewInput,
     ctx: ProviderRunContext,
@@ -69,7 +82,7 @@ export class CursorProvider implements AiProvider {
       const text = await this.runOnce({
         ctx,
         cwd,
-        prompt: attempt === 2 ? this.retryPrompt(prompt, lastErrorPreview) : prompt,
+        prompt: attempt === 2 ? retryPrompt(prompt, lastErrorPreview) : prompt,
       });
       try {
         return extractReviewJson(text);
@@ -93,29 +106,25 @@ export class CursorProvider implements AiProvider {
     const intentSkill    = ctx.skills.find(s => s.pipelineStage === "intent")!;
     const inlineSkill    = ctx.skills.find(s => s.pipelineStage === "inline-review")!;
     const synthesisSkill = ctx.skills.find(s => s.pipelineStage === "synthesis")!;
-  
-    // Pass 1 — intent
+
     ctx.onProgress("pass 1/3: intent analysis");
     const intentPrompt = `${CURSOR_PREAMBLE}${intentSkill.toSystemPromptBlock()}\n\n---\n\n${buildIntentPrompt(input.pr)}`;
     const intentText   = await this.runOnce({ ctx, cwd, prompt: intentPrompt });
-  
-    // Pass 2 — inline comments
+
     ctx.onProgress("pass 2/3: inline review");
     const inlineSystem = `${CURSOR_PREAMBLE}${inlineSkill.toSystemPromptBlock()}`;
     const inlineUser   = buildInlineReviewPrompt(input.pr, intentText);
     const inlineText   = await this.runOnce({ ctx, cwd, prompt: `${inlineSystem}\n\n---\n\n${inlineUser}` });
     const { comments } = extractInlineReview(inlineText);
-  
-    // Pass 3 — synthesis
+
     ctx.onProgress("pass 3/3: synthesis");
     const synthSystem = `${CURSOR_PREAMBLE}${synthesisSkill.toSystemPromptBlock()}`;
     const synthUser   = buildSynthesisPrompt(intentText, comments);
     const synthText   = await this.runOnce({ ctx, cwd, prompt: `${synthSystem}\n\n---\n\n${synthUser}` });
     const { summary, riskLevel, followUps } = extractSynthesis(synthText);
-  
+
     return { summary, riskLevel, comments, followUps };
   }
-  
 
   private async runOnce(args: {
     ctx: ProviderRunContext;
@@ -147,15 +156,15 @@ export class CursorProvider implements AiProvider {
       throw err;
     }
   }
+}
 
-  private retryPrompt(prompt: string, error?: string): string {
-    return [
-      "Your previous response did not match the required JSON schema:",
-      error ?? "(no details)",
-      "",
-      "Try again. Return ONLY the JSON object, with no prose or code fences.",
-      "",
-      prompt,
-    ].join("\n");
-  }
+function retryPrompt(prompt: string, error?: string): string {
+  return [
+    "Your previous response did not match the required JSON schema:",
+    error ?? "(no details)",
+    "",
+    "Try again. Return ONLY the JSON object, with no prose or code fences.",
+    "",
+    prompt,
+  ].join("\n");
 }
