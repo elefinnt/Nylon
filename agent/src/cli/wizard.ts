@@ -6,7 +6,7 @@ import { defaultConfigPath } from "../config.js";
 import { listRegisteredProviders, getProvider } from "../providers/registry.js";
 import { AgentError } from "../util/errors.js";
 import type { EnvDiscovery } from "./env.js";
-import { listGithubTokenVars, listProviderKeyVars } from "./env.js";
+import { listGithubTokenVars, listProviderKeyVars, listClickUpTokenVars } from "./env.js";
 import type { Prompter } from "./prompts.js";
 import { paint } from "./render.js";
 
@@ -87,7 +87,9 @@ export async function runInitWizard(
 
   const modelId = await resolveModelId({ prompter, providerId, fromEnvOnly });
 
-  const toml = renderConfigToml({ githubToken, providerId, apiKey, modelId });
+  const clickupToken = await resolveClickUpToken({ prompter, env, fromEnvOnly });
+
+  const toml = renderConfigToml({ githubToken, providerId, apiKey, modelId, clickupToken });
   mkdirSync(dirname(target), { recursive: true });
   writeFileSync(target, toml, { encoding: "utf8" });
   try {
@@ -226,6 +228,39 @@ async function resolveModelId(args: {
   );
 }
 
+async function resolveClickUpToken(args: {
+  prompter: Prompter;
+  env?: EnvDiscovery;
+  fromEnvOnly: boolean;
+}): Promise<string | undefined> {
+  const { prompter, env, fromEnvOnly } = args;
+
+  if (env?.clickupToken) {
+    stdout.write(
+      `${paint.bold("5. ClickUp")}  ${paint.green(`✓ using ${env.clickupToken.source}`)}\n\n`,
+    );
+    return env.clickupToken.value;
+  }
+
+  // In --from-env mode we silently skip ClickUp if not present (it's optional).
+  if (fromEnvOnly) return undefined;
+
+  stdout.write(`${paint.bold("5. ClickUp")}  ${paint.dim("(optional — skip to set up later)")}\n`);
+  stdout.write(
+    paint.dim(
+      "  Mint a Personal API Token at ClickUp → Settings → Apps.\n" +
+        "  Token starts with `pk_`. Leave blank to skip.\n",
+    ),
+  );
+
+  const raw = (await prompter.text("  ClickUp token", { required: false })).trim();
+  if (raw.length === 0) {
+    stdout.write(paint.dim("  Skipped — add [integrations.clickup] to your config later.\n\n"));
+    return undefined;
+  }
+  return raw;
+}
+
 function buildProviderChoices(): ProviderChoice[] {
   return listRegisteredProviders().map((p) => {
     const blurb = PROVIDER_BLURB[p.id];
@@ -246,8 +281,9 @@ function renderConfigToml(args: {
   providerId: string;
   apiKey: string;
   modelId: string;
+  clickupToken?: string;
 }): string {
-  const { githubToken, providerId, apiKey, modelId } = args;
+  const { githubToken, providerId, apiKey, modelId, clickupToken } = args;
 
   const header = [
     "# nylon config",
@@ -266,9 +302,17 @@ function renderConfigToml(args: {
     "post_review = true",
   ];
 
-  return [header, github, provider, defaults]
-    .map((section) => section.join("\n"))
-    .join("\n\n") + "\n";
+  const sections = [header, github, provider, defaults];
+
+  if (clickupToken) {
+    sections.push([
+      "[integrations.clickup]",
+      `token = ${tomlString(clickupToken)}`,
+      "# default_list_id = \"\"  # optional: skip the list picker every run",
+    ]);
+  }
+
+  return sections.map((s) => s.join("\n")).join("\n\n") + "\n";
 }
 
 function tomlString(value: string): string {
