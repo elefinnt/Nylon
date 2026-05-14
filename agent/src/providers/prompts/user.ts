@@ -22,13 +22,25 @@ interface Review {
   riskLevel: "low" | "medium" | "high";
   comments: Array<{
     path: string;              // the file path exactly as it appears in the diff
-    line: number;              // 1-indexed line number on the right-hand side of the diff
+    line: number;              // 1-indexed line number on the right-hand side of the diff (required, integer, no nulls)
     side: "RIGHT" | "LEFT";    // default "RIGHT" (new code)
     body: string;              // markdown, one short paragraph
     severity: "info" | "suggestion" | "warning" | "issue";
   }>;
   followUps: string[];         // optional concrete follow-up tasks for after the PR merges
 }
+
+Severity rules (strict):
+- The severity field MUST be exactly one of: "info", "suggestion", "warning", "issue". No other values are accepted.
+- Do NOT use "nit", "nitpick", "praise", "question", "bug", "blocker", or any other label. Map them:
+  - nit / nitpick / minor / style → "suggestion"
+  - praise / question / note / observation → "info"
+  - warn / important / caution → "warning"
+  - bug / error / blocker / critical → "issue"
+
+Line rules (strict):
+- Every entry in \`comments\` MUST anchor to a specific 1-indexed line in the diff. Do not return null, 0, or strings.
+- If feedback applies to the file overall, an entire hunk, or the PR as a whole and you cannot pick a single line, do NOT include it in \`comments\`. Fold it into \`summary\` or add it to \`followUps\` instead.
 `;
 
 export function loadSystemPrompt(skills: readonly Skill[] = []): string {
