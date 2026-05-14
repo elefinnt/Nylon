@@ -81,6 +81,25 @@ test("menu rejects unexpected arguments", () => {
   assert.equal(out.kind, "error");
 });
 
+test("cat maps to the cat command", () => {
+  const out = parseArgv(["cat"]);
+  assert.equal(out.kind, "command");
+  if (out.kind !== "command") return;
+  assert.deepEqual(out.command, { kind: "cat" });
+});
+
+test("cat --help routes to its help topic", () => {
+  const out = parseArgv(["cat", "--help"]);
+  assert.equal(out.kind, "command");
+  if (out.kind !== "command") return;
+  assert.deepEqual(out.command, { kind: "help", topic: "cat" });
+});
+
+test("cat rejects unexpected arguments", () => {
+  const out = parseArgv(["cat", "extra"]);
+  assert.equal(out.kind, "error");
+});
+
 test("review parses url + dry + provider/model overrides", () => {
   const out = parseArgv([
     "review",
