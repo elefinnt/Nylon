@@ -7,6 +7,7 @@ import {
   isInteractiveSelectSupported,
   SelectCancelled,
 } from "./interactive-select.js";
+import type { LiveRegion } from "./live-region.js";
 import { paint } from "./render.js";
 
 /**
@@ -67,7 +68,7 @@ export class Prompter {
   async choice<T extends string>(
     label: string,
     choices: ReadonlyArray<{ id: T; label: string; hint?: string }>,
-    opts: { defaultId?: T } = {},
+    opts: { defaultId?: T; region?: LiveRegion; header?: string } = {},
   ): Promise<T> {
     if (choices.length === 0) {
       throw new Error("Prompter.choice: at least one choice is required");
@@ -81,6 +82,8 @@ export class Prompter {
           items: choices,
         };
         if (opts.defaultId !== undefined) selectOpts.defaultId = opts.defaultId;
+        if (opts.region !== undefined) selectOpts.region = opts.region;
+        if (opts.header !== undefined) selectOpts.header = opts.header;
         return await interactiveSelect<T>(selectOpts);
       } catch (err: unknown) {
         if (err instanceof SelectCancelled) {

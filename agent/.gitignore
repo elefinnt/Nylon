@@ -1,3 +1,6 @@
 dist/
 node_modules/
 *.tsbuildinfo
+
+# Local scripts (not for committing)
+scripts/

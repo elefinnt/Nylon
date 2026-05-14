@@ -31,7 +31,7 @@ export class AnthropicProvider implements AiProvider {
     }
     const client = new Anthropic({ apiKey: ctx.apiKey, baseURL: ctx.baseUrl });
 
-    const system = loadSystemPrompt();
+    const system = loadSystemPrompt(ctx.skills);
     const user = buildUserPrompt(input.pr);
 
     ctx.onProgress("requesting completion", { in: estimateTokens(system + user) });

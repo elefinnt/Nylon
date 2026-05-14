@@ -31,7 +31,7 @@ export class OpenAiProvider implements AiProvider {
     }
     const client = new OpenAI({ apiKey: ctx.apiKey, baseURL: ctx.baseUrl });
 
-    const system = loadSystemPrompt();
+    const system = loadSystemPrompt(ctx.skills);
     const user = buildUserPrompt(input.pr);
 
     ctx.onProgress("requesting completion", { in: estimateTokens(system + user) });

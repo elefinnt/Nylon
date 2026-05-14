@@ -4,6 +4,7 @@
  * Surface:
  *   pr-review init [--force]
  *   pr-review providers
+ *   pr-review menu
  *   pr-review review <pr-url> [--dry|-n] [--provider|-p <id>] [--model|-m <id>]
  *                              [--verbose|-v]
  *   pr-review <pr-url>             (alias for `review <pr-url>`)
@@ -19,6 +20,7 @@ export type CliCommand =
   | { kind: "version" }
   | { kind: "init"; force: boolean; fromEnv: boolean }
   | { kind: "providers" }
+  | { kind: "menu" }
   | {
       kind: "review";
       url: string;
@@ -56,6 +58,8 @@ export function parseArgv(argv: readonly string[]): ParseOutcome {
       return parseInit(argv.slice(1));
     case "providers":
       return parseProviders(argv.slice(1));
+    case "menu":
+      return parseMenu(argv.slice(1));
     case "review":
       return parseReview(argv.slice(1));
     default:
@@ -106,6 +110,20 @@ function parseProviders(rest: readonly string[]): ParseOutcome {
     };
   }
   return { kind: "command", command: { kind: "providers" } };
+}
+
+function parseMenu(rest: readonly string[]): ParseOutcome {
+  for (const arg of rest) {
+    if (HELP_FLAGS.has(arg)) {
+      return { kind: "command", command: { kind: "help", topic: "menu" } };
+    }
+    return {
+      kind: "error",
+      message: `\`menu\` takes no arguments (got ${arg}).`,
+      exitCode: 64,
+    };
+  }
+  return { kind: "command", command: { kind: "menu" } };
 }
 
 function parseReview(rest: readonly string[]): ParseOutcome {

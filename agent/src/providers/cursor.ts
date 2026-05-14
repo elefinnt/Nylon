@@ -1,6 +1,15 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { hasPipelineSkills }      from "../skills/registry.js";
+import {
+  buildIntentPrompt,
+  buildInlineReviewPrompt,
+  buildSynthesisPrompt,
+  extractInlineReview,
+  extractSynthesis,
+} from "./prompts/pipeline.js";
+
 
 import { Agent, CursorAgentError } from "@cursor/sdk";
 
@@ -32,45 +41,81 @@ export class CursorProvider implements AiProvider {
   ];
 
   async review(input: ReviewInput, ctx: ProviderRunContext): Promise<ReviewOutput> {
-    const system = loadSystemPrompt();
-    const user = buildUserPrompt(input.pr);
-    const prompt = `${CURSOR_PREAMBLE}${system}\n\n---\n\n${user}`;
-
     const cwd = mkdtempSync(join(tmpdir(), "pr-agent-cursor-"));
-    ctx.onProgress("launching cursor agent");
     try {
-      let attempt = 0;
-      let lastErrorPreview: string | undefined;
-      while (attempt < 2) {
-        attempt++;
-        const text = await this.runOnce({
-          ctx,
-          cwd,
-          prompt: attempt === 2 ? this.retryPrompt(prompt, lastErrorPreview) : prompt,
-        });
-        try {
-          return extractReviewJson(text);
-        } catch (err: unknown) {
-          if (err instanceof AgentError && err.code.startsWith("MODEL_") && attempt < 2) {
-            lastErrorPreview = err.message;
-            ctx.onLog("warn", `Cursor output rejected (${err.code}); retrying.`);
-            continue;
-          }
-          throw err;
-        }
+      if (hasPipelineSkills(ctx.skills)) {
+        return await this.runPipeline(input, ctx, cwd);
       }
-      throw new AgentError(
-        "PROVIDER_GAVE_UP",
-        "Cursor did not return a valid review after retries.",
-      );
+      return await this.runSinglePass(input, ctx, cwd);
     } finally {
-      try {
-        rmSync(cwd, { recursive: true, force: true });
-      } catch {
-        // Best-effort cleanup of the scratch dir.
-      }
+      try { rmSync(cwd, { recursive: true, force: true }); } catch { /* best-effort */ }
     }
   }
+
+  private async runSinglePass(
+    input: ReviewInput,
+    ctx: ProviderRunContext,
+    cwd: string,
+  ): Promise<ReviewOutput> {
+    const system = loadSystemPrompt(ctx.skills);
+    const user   = buildUserPrompt(input.pr);
+    const prompt = `${CURSOR_PREAMBLE}${system}\n\n---\n\n${user}`;
+    ctx.onProgress("launching cursor agent (single pass)");
+
+    let attempt = 0;
+    let lastErrorPreview: string | undefined;
+    while (attempt < 2) {
+      attempt++;
+      const text = await this.runOnce({
+        ctx,
+        cwd,
+        prompt: attempt === 2 ? this.retryPrompt(prompt, lastErrorPreview) : prompt,
+      });
+      try {
+        return extractReviewJson(text);
+      } catch (err: unknown) {
+        if (err instanceof AgentError && err.code.startsWith("MODEL_") && attempt < 2) {
+          lastErrorPreview = err.message;
+          ctx.onLog("warn", `Cursor output rejected (${err.code}); retrying.`);
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw new AgentError("PROVIDER_GAVE_UP", "Cursor did not return a valid review after retries.");
+  }
+
+  private async runPipeline(
+    input: ReviewInput,
+    ctx: ProviderRunContext,
+    cwd: string,
+  ): Promise<ReviewOutput> {
+    const intentSkill    = ctx.skills.find(s => s.pipelineStage === "intent")!;
+    const inlineSkill    = ctx.skills.find(s => s.pipelineStage === "inline-review")!;
+    const synthesisSkill = ctx.skills.find(s => s.pipelineStage === "synthesis")!;
+  
+    // Pass 1 — intent
+    ctx.onProgress("pass 1/3: intent analysis");
+    const intentPrompt = `${CURSOR_PREAMBLE}${intentSkill.toSystemPromptBlock()}\n\n---\n\n${buildIntentPrompt(input.pr)}`;
+    const intentText   = await this.runOnce({ ctx, cwd, prompt: intentPrompt });
+  
+    // Pass 2 — inline comments
+    ctx.onProgress("pass 2/3: inline review");
+    const inlineSystem = `${CURSOR_PREAMBLE}${inlineSkill.toSystemPromptBlock()}`;
+    const inlineUser   = buildInlineReviewPrompt(input.pr, intentText);
+    const inlineText   = await this.runOnce({ ctx, cwd, prompt: `${inlineSystem}\n\n---\n\n${inlineUser}` });
+    const { comments } = extractInlineReview(inlineText);
+  
+    // Pass 3 — synthesis
+    ctx.onProgress("pass 3/3: synthesis");
+    const synthSystem = `${CURSOR_PREAMBLE}${synthesisSkill.toSystemPromptBlock()}`;
+    const synthUser   = buildSynthesisPrompt(intentText, comments);
+    const synthText   = await this.runOnce({ ctx, cwd, prompt: `${synthSystem}\n\n---\n\n${synthUser}` });
+    const { summary, riskLevel, followUps } = extractSynthesis(synthText);
+  
+    return { summary, riskLevel, comments, followUps };
+  }
+  
 
   private async runOnce(args: {
     ctx: ProviderRunContext;
