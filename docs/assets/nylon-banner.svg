@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 240" width="800" height="240" role="img" aria-label="NYLON">
+  <title>NYLON</title>
+  <defs>
+    <linearGradient id="rainbow" gradientUnits="userSpaceOnUse" x1="60" y1="0" x2="740" y2="0">
+      <stop offset="0%"   stop-color="#ff5d5d"/>
+      <stop offset="16%"  stop-color="#ffa64d"/>
+      <stop offset="33%"  stop-color="#ffe14d"/>
+      <stop offset="50%"  stop-color="#4dffa6"/>
+      <stop offset="66%"  stop-color="#4dc3ff"/>
+      <stop offset="83%"  stop-color="#9a6bff"/>
+      <stop offset="100%" stop-color="#ff6bd1"/>
+    </linearGradient>
+    <filter id="soft" x="-5%" y="-15%" width="110%" height="130%">
+      <feGaussianBlur stdDeviation="0.4"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="240" fill="transparent"/>
+
+  <g font-family="'Cascadia Mono','JetBrains Mono','Fira Code','Consolas','Courier New',monospace"
+     font-size="28" font-weight="700" fill="url(#rainbow)" filter="url(#soft)"
+     xml:space="preserve" text-anchor="middle">
+    <text x="400" y="50">  _   _  __   __  _        ___    _   _ </text>
+    <text x="400" y="86"> | \ | | \ \ / / | |     / _ \  | \ | |</text>
+    <text x="400" y="122"> |  \| |  \ V /  | |    | | | | |  \| |</text>
+    <text x="400" y="158"> | |\  |   | |   | |___ | |_| | | |\  |</text>
+    <text x="400" y="194"> |_| \_|   |_|   |_____| \___/  |_| \_|</text>
+  </g>
+
+  <text x="400" y="226" text-anchor="middle"
+        font-family="'Inter','Segoe UI',system-ui,sans-serif"
+        font-size="13" fill="#9aa0a6" letter-spacing="2">
+    A CLI swiss-army knife &#8212; PR reviews, task sync, and more
+  </text>
+</svg>
