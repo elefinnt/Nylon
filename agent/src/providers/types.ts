@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { Skill } from "../skills/types.js";
 
 export const reviewCommentSchema = z.object({
   path: z.string().min(1),
@@ -28,6 +29,7 @@ export interface ProviderRunContext {
   readonly apiKey: string;
   readonly baseUrl?: string;
   readonly model: string;
+  readonly skills: readonly Skill[];
   onProgress(detail: string, tokens?: { in?: number; out?: number }): void;
   onLog(level: "debug" | "info" | "warn" | "error", message: string): void;
 }
