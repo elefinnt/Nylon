@@ -10,6 +10,7 @@ import { chunk } from "./chunker.js";
 import { parsePrUrl } from "./url.js";
 import { AgentError, toAgentError } from "../util/errors.js";
 import { logger } from "../util/log.js";
+import { filterValidSkillIds, resolveSkills } from "../skills/registry.js";
 
 export async function runReview(request: ReviewRequest): Promise<void> {
   try {
@@ -47,10 +48,14 @@ export async function runReview(request: ReviewRequest): Promise<void> {
       stage: "reviewing",
       detail: `${provider.displayName} (${modelId})`,
     });
+
+    const skillIds = filterValidSkillIds(config.review?.skills ?? []);
+    const skills = resolveSkills(skillIds);
     const ctx: ProviderRunContext = {
       apiKey,
       model: modelId,
       baseUrl: providerCfg.base_url ?? undefined,
+      skills,
       onProgress: (detail, tokens) =>
         writeEvent({
           type: "progress",
@@ -81,6 +86,8 @@ export async function runReview(request: ReviewRequest): Promise<void> {
       output: reviewOutput,
       providerId: provider.id,
       modelId,
+      requestChangesOnIssue: config.review.request_changes_on_issue,
+      applyLabels: config.review.labels,
     });
 
     writeEvent({
