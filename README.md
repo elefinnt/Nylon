@@ -52,7 +52,7 @@ Posted review: https://github.com/acme/widgets/pull/42#pullrequestreview-...
 | [How it works](#how-it-works) | CLI + agent, high-level flow |
 | [Review skills](#review-skills-the-3-pass-pipeline) | 3-pass pipeline and config |
 | [Interactive menu](#interactive-menu) | Bare `nylon` in a TTY |
-| [Document extract (`nylon extract`)](#document-extract-nylon-extract) | SOW → tasks (ClickUp) from a file |
+| [Document extract](#document-extract-nylon-extract) | SOW → tasks (ClickUp) from a file |
 | [Installation (Windows)](#installation-windows) | Prerequisites and installer |
 | [Configuration](#configuration) | `config.toml`, PAT, providers, ClickUp |
 | [Daily use](#daily-use) | First review and common commands |
