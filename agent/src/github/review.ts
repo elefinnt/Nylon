@@ -20,21 +20,25 @@ export interface PostReviewInput {
   applyLabels?: boolean;
 }
 
+type AnchorableComment = ReviewComment & { line: number };
+
 export async function postReview(
   octokit: Octokit,
   input: PostReviewInput,
 ): Promise<PostReviewResult> {
   const validFiles = new Set(input.pr.files.map((f) => f.filename));
-  const anchorable: ReviewComment[] = [];
+  const anchorable: AnchorableComment[] = [];
   const orphan: ReviewComment[] = [];
   for (const c of input.output.comments) {
-    if (!validFiles.has(c.path)) {
+    // A comment can't be anchored if the file is not in the diff, or if the
+    // model couldn't pick a specific line (line === null, e.g. file-level
+    // feedback). Both cases get rendered in the summary "could not be
+    // anchored" block so nothing is silently dropped.
+    if (!validFiles.has(c.path) || c.line === null) {
       orphan.push(c);
       continue;
     }
-    // Best-effort: we trust the model on line numbers but GitHub will reject
-    // anchors outside the diff. We catch those below and degrade gracefully.
-    anchorable.push(c);
+    anchorable.push({ ...c, line: c.line });
   }
 
   const event = deriveReviewEvent(input.output, input.requestChangesOnIssue ?? false);
@@ -85,7 +89,7 @@ async function tryCreateReview(
   octokit: Octokit,
   parsed: ParsedPrUrl,
   body: string,
-  comments: ReviewComment[],
+  comments: AnchorableComment[],
   event: "COMMENT" | "REQUEST_CHANGES",
 ): Promise<CreateOk | CreateFailed> {
   if (comments.length === 0) {
@@ -148,7 +152,7 @@ function renderSummary(
     parts.push("");
     parts.push("<details><summary>Comments that could not be anchored to the diff</summary>");
     parts.push("");
-    for (const c of orphans) parts.push(`- \`${c.path}:${c.line}\`: ${c.body.replace(/\n+/g, " ")}`);
+    for (const c of orphans) parts.push(`- ${formatAnchor(c)}: ${c.body.replace(/\n+/g, " ")}`);
     parts.push("</details>");
   }
   parts.push("");
@@ -160,9 +164,13 @@ function renderInlineFallback(comments: ReviewComment[]): string {
   if (comments.length === 0) return "";
   const lines = ["", "", "#### Inline notes (rendered here because line anchors did not match the diff)"];
   for (const c of comments) {
-    lines.push(`- **${labelForSeverity(c.severity)}** \`${c.path}:${c.line}\`: ${c.body.replace(/\n+/g, " ")}`);
+    lines.push(`- **${labelForSeverity(c.severity)}** ${formatAnchor(c)}: ${c.body.replace(/\n+/g, " ")}`);
   }
   return lines.join("\n");
+}
+
+function formatAnchor(c: ReviewComment): string {
+  return c.line === null ? `\`${c.path}\`` : `\`${c.path}:${c.line}\``;
 }
 
 function renderComment(c: ReviewComment): string {
