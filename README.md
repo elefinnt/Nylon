@@ -190,7 +190,7 @@ request_changes_on_issue = false
 labels = false
 ```
 
-Browse the catalogue and copy the skill IDs interactively with:
+Browse the catalogue interactively with:
 
 ```powershell
 nylon menu
@@ -213,12 +213,20 @@ sections:
 - **PR agent** &mdash; jumping-off point for reviews, `init`, and listing
   providers. The actions point at the corresponding `nylon`
   subcommands for now while the UI is being filled in.
-- **Task exporter** &mdash; a scripted demo of the upcoming Monday.com /
-  Jira / ClickUp sync flow. No data leaves your machine; it is purely a
-  preview of the eventual UX.
-- **Skills** &mdash; browse the review skills the agent currently
-  exposes, with their descriptions and the snippet to paste into
-  `config.toml`.
+- **Task exporter** &mdash; **ClickUp** export is live when
+  `[integrations.clickup]` is present in `config.toml` with a real token
+  (including when `nylon init` writes that block after reading
+  `CLICKUP_API_KEY` or `NYLON_CLICKUP_TOKEN`). You pick a document path
+  (Markdown, PDF, Word, or plain text), the agent runs a fixed five-stage
+  extraction pipeline, then confirms before creating tasks in your chosen
+  list. Without a token in config, Nylon falls back to the scripted demo
+  flow so the UX is still easy to try. Monday.com and Jira are not wired
+  up yet.
+- **Skills** &mdash; browse every skill in the catalogue (GitHub review
+  lenses and the stages of the task-extraction pipeline), with descriptions
+  and config hints. Review skills are toggled with `[review].skills`; the
+  SOW &rarr; ClickUp pipeline always runs the same five agents in order
+  (you cannot enable individual extraction stages in config).
 
 Arrow keys (or number shortcuts) navigate, Enter confirms, Ctrl+C exits.
 The menu requires an interactive terminal &mdash; on CI it falls back to
@@ -382,6 +390,17 @@ post_review = true
 skills = ["intent-analysis", "inline-reviewer", "review-synthesis"]
 request_changes_on_issue = false
 labels = false
+
+# Optional — Task exporter → ClickUp (personal API token from ClickUp → Settings → Apps).
+# [integrations.clickup]
+# token = "pk_replace_me"
+# default_list_id = ""   # optional: skip the list picker
+
+[extract]
+# Controls how documents are read before the fixed five-agent SOW pipeline.
+# include = ["md", "pdf", "docx", "txt"]
+# pdf_strategy = "auto"   # auto | text | vision
+# max_chars_per_doc = 80000
 ```
 
 ### Minting a GitHub PAT
@@ -399,7 +418,23 @@ Fine-grained tokens also work: grant **Pull requests: read and write**
 plus **Contents: read** on the repos you want to review.
 
 The full reference, including base-URL overrides for Azure / proxies, is
-in [docs/CONFIG.md](docs/CONFIG.md).
+in [docs/CONFIG.md](docs/CONFIG.md). That file may lag slightly behind the
+template emitted by `nylon init`; when in doubt, match the comments in your
+on-disk `config.toml`.
+
+### Task exporter (ClickUp) and `[extract]`
+
+The **Task exporter** path reads a local document, runs **five** AI stages
+in a fixed order (intelligence &rarr; architect &rarr; planner &rarr;
+ticket generator &rarr; quality), then optionally pushes the resulting
+tree to **ClickUp**. You cannot reorder or subset those stages via
+`config.toml`; an older `extract.skills` field, if present, is accepted
+and ignored for backwards compatibility.
+
+| Section                      | Purpose                                                                 |
+| ---------------------------- | ----------------------------------------------------------------------- |
+| `[integrations.clickup]`     | `token` (required for live export), optional `default_list_id` to skip list picking. |
+| `[extract]`                  | `include` (file extensions to ingest), `pdf_strategy` (`auto` tries text first), `max_chars_per_doc` (cap per document). |
 
 ### Environment variables (optional)
 
@@ -410,6 +445,10 @@ set when `nylon` starts, they take priority:
 - Anthropic: `ANTHROPIC_API_KEY` or `NYLON_ANTHROPIC_KEY`
 - OpenAI: `OPENAI_API_KEY` or `NYLON_OPENAI_KEY`
 - Cursor: `CURSOR_API_KEY` or `NYLON_CURSOR_KEY`
+- ClickUp: `CLICKUP_API_KEY` or `NYLON_CLICKUP_TOKEN` (picked up by
+  **`nylon init`** so the token can be written into `config.toml`; the Task
+  exporter still reads `[integrations.clickup]` from the file, not the live
+  environment alone)
 - Default provider: `NYLON_PROVIDER`
 
 A `.env` file in your current working directory is also loaded
@@ -539,14 +578,16 @@ There is more detail (including the full IPC protocol) in
 Inside `agent/src/`, the modules that most often come up in discussion
 are:
 
-| Path                          | What lives here                                                  |
-| ----------------------------- | ---------------------------------------------------------------- |
-| `cli/menu/`                   | The interactive NYLON main menu and its sub-menus.               |
-| `cli/anim/`                   | Banner, spinner, progress bar, checklist and typewriter helpers. |
-| `skills/`                     | Skill type, registry and the three built-in review skills.       |
-| `providers/`                  | Anthropic, OpenAI and Cursor adapters + prompt builders.         |
-| `providers/prompts/pipeline.ts` | The three-pass intent / inline / synthesis prompts.            |
-| `github/review.ts`            | Posting reviews, deriving labels and the REQUEST_CHANGES path.   |
+| Path                            | What lives here                                                  |
+| ------------------------------- | ---------------------------------------------------------------- |
+| `cli/menu/`                     | The interactive NYLON main menu and its sub-menus.               |
+| `cli/anim/`                     | Banner, spinner, progress bar, checklist and typewriter helpers. |
+| `skills/`                       | Skill type, registry, review skills and SOW pipeline stages.     |
+| `integrations/clickup/`         | ClickUp API client, list picker and export flow.                 |
+| `pipeline/`                     | PR review orchestration and document extraction (SOW pipeline). |
+| `providers/`                    | Anthropic, OpenAI and Cursor adapters + prompt builders.         |
+| `providers/prompts/pipeline.ts` | The three-pass intent / inline / synthesis prompts.              |
+| `github/review.ts`              | Posting reviews, deriving labels and the REQUEST_CHANGES path.   |
 
 ---
 
@@ -583,7 +624,7 @@ has a full manual test plan covering both halves.
 
 ## Status and roadmap
 
-Nylon v0.2 is Windows-first and PR-review-first. Recently landed:
+Nylon is Windows-first and PR-review-first. Recently landed:
 
 - 3-pass review pipeline (`intent-analysis` &rarr; `inline-reviewer`
   &rarr; `review-synthesis`) on the Cursor provider.
@@ -593,13 +634,16 @@ Nylon v0.2 is Windows-first and PR-review-first. Recently landed:
   and a `REQUEST_CHANGES` event when severity warrants it.
 - Interactive `nylon menu` with PR agent, Task exporter and Skills
   sections, animated banner, and live regions for in-place redraws.
+- **ClickUp** export from the Task exporter when `[integrations.clickup]`
+  is configured, backed by a fixed five-agent document pipeline and
+  `[extract]` ingestion options.
 
 Coming next:
 
 - Full 3-pass pipeline on Anthropic and OpenAI (today they take the
   skills as system-prompt hints but still run a single combined call).
-- Wiring the **Task exporter** menu to real Monday.com / Jira / ClickUp
-  back-ends &mdash; today it runs a scripted demo for UX feedback.
+- Monday.com and Jira exporters (ClickUp is live; those remain to be
+  implemented).
 - macOS and Linux installers (the C++ and TypeScript code is already
   portable; this is mostly a CI job &mdash; see
   [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full "in scope"
