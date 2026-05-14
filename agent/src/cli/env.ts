@@ -8,12 +8,12 @@ import { listRegisteredProviders } from "../providers/registry.js";
  * priority order. The first non-empty match wins.
  */
 const PROVIDER_KEY_VARS: Record<string, readonly string[]> = {
-  cursor: ["CURSOR_API_KEY", "PR_AGENT_CURSOR_KEY"],
-  openai: ["OPENAI_API_KEY", "PR_AGENT_OPENAI_KEY"],
-  anthropic: ["ANTHROPIC_API_KEY", "PR_AGENT_ANTHROPIC_KEY"],
+  cursor: ["CURSOR_API_KEY", "NYLON_CURSOR_KEY"],
+  openai: ["OPENAI_API_KEY", "NYLON_OPENAI_KEY"],
+  anthropic: ["ANTHROPIC_API_KEY", "NYLON_ANTHROPIC_KEY"],
 };
 
-const GITHUB_TOKEN_VARS = ["PR_AGENT_GITHUB_TOKEN", "GITHUB_TOKEN", "GH_TOKEN"];
+const GITHUB_TOKEN_VARS = ["NYLON_GITHUB_TOKEN", "GITHUB_TOKEN", "GH_TOKEN"];
 
 export interface EnvDiscovery {
   /** Token from env, if any. Includes which env var name supplied it. */
@@ -43,7 +43,7 @@ export function discoverFromEnvironment(opts: { dotEnvPath?: string } = {}): Env
     if (found) providerKeys.set(provider.id, found);
   }
 
-  const preferredProvider = pickFirst(["PR_AGENT_PROVIDER"]);
+  const preferredProvider = pickFirst(["NYLON_PROVIDER"]);
 
   const result: EnvDiscovery = {
     providerKeys,
