@@ -23,7 +23,7 @@ default_model = "composer-2"
 [providers.anthropic]
 api_key = "sk-ant-replace-me"
 # Optional. Falls back to the latest Claude model the SDK knows about.
-default_model = "claude-opus-4.5"
+default_model = "claude-opus-4-7"
 
 [providers.openai]
 api_key = "sk-replace-me"
@@ -33,7 +33,7 @@ default_model = "gpt-5"
 [defaults]
 # Optional. If both are set the interactive picker is skipped.
 # provider = "anthropic"
-# model = "claude-opus-4.5"
+# model = "claude-opus-4-7"
 post_review = true
 
 [review]
