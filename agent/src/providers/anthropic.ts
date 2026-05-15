@@ -18,9 +18,13 @@ export class AnthropicProvider implements AiProvider {
   readonly id = "anthropic";
   readonly displayName = "Anthropic Claude";
   readonly models: readonly ModelDescriptor[] = [
-    { id: "claude-opus-4.5", displayName: "Claude Opus 4.5", contextTokens: 200_000 },
-    { id: "claude-sonnet-4.5", displayName: "Claude Sonnet 4.5", contextTokens: 200_000 },
-    { id: "claude-haiku-4.5", displayName: "Claude Haiku 4.5", contextTokens: 200_000 },
+    { id: "claude-opus-4-7", displayName: "Claude Opus 4.7", contextTokens: 1_000_000 },
+    { id: "claude-sonnet-4-6", displayName: "Claude Sonnet 4.6", contextTokens: 1_000_000 },
+    {
+      id: "claude-haiku-4-5-20251001",
+      displayName: "Claude Haiku 4.5",
+      contextTokens: 200_000,
+    },
   ];
 
   async review(input: ReviewInput, ctx: ProviderRunContext): Promise<ReviewOutput> {
