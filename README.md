@@ -255,7 +255,7 @@ default_model = "composer-2"
 
 [providers.anthropic]
 api_key = "sk-ant-replace_me"
-default_model = "claude-opus-4.5"
+default_model = "claude-opus-4-7"
 
 [providers.openai]
 api_key = "sk-replace_me"
@@ -335,7 +335,7 @@ Posted reviews append `_Reviewed by Nylon._` for visibility.
 | `nylon extract <path> --dry` | Extract pipeline only; no ClickUp push |
 | `nylon <pr-url>` | Review and post |
 | `nylon <pr-url> --dry` | No GitHub POST |
-| `nylon <pr-url> -p anthropic -m claude-opus-4.5` | Explicit provider/model |
+| `nylon <pr-url> -p anthropic -m claude-opus-4-7` | Explicit provider/model |
 | `nylon --verbose <pr-url>` | Agent debug logs on stderr |
 | `nylon --help` / `nylon help review` / `nylon help extract` | CLI help |
 
