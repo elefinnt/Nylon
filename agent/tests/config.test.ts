@@ -40,7 +40,7 @@ token = "ghp_realtokenvalue"
 
 [providers.anthropic]
 api_key = "sk-ant-real"
-default_model = "claude-opus-4.5"
+default_model = "claude-opus-4-7"
 `,
       "utf8",
     );
