@@ -16,7 +16,7 @@ test("review requires url, provider, model", () => {
 
 test("valid review parses", () => {
   const r = parseRequestLine(
-    '{"type":"review","url":"https://github.com/a/b/pull/1","provider":"anthropic","model":"claude-opus-4.5"}',
+    '{"type":"review","url":"https://github.com/a/b/pull/1","provider":"anthropic","model":"claude-opus-4-7"}',
   );
   assert.equal(r.success, true);
   if (r.success) {

@@ -44,7 +44,7 @@ A worked example:
 ```
 CLI -> agent : {"type":"listProviders"}
 agent -> CLI : {"type":"providers","providers":[{"id":"anthropic","displayName":"Anthropic Claude","models":[...]}]}
-CLI -> agent : {"type":"review","url":"https://github.com/a/b/pull/1","provider":"anthropic","model":"claude-opus-4.5","postReview":true}
+CLI -> agent : {"type":"review","url":"https://github.com/a/b/pull/1","provider":"anthropic","model":"claude-opus-4-7","postReview":true}
 agent -> CLI : {"type":"progress","stage":"fetching","detail":"a/b#1"}
 agent -> CLI : {"type":"progress","stage":"reviewing","tokensIn":3210,"tokensOut":214}
 agent -> CLI : {"type":"result","ok":true,"reviewUrl":"https://github.com/a/b/pull/1#pullrequestreview-..."}

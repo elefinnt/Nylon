@@ -124,7 +124,7 @@ default_model = "composer-2"
 
 [providers.anthropic]
 api_key = "sk-ant-replace_me"
-default_model = "claude-opus-4.5"
+default_model = "claude-opus-4-7"
 
 [providers.openai]
 api_key = "sk-replace_me"
